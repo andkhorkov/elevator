@@ -1070,7 +1070,7 @@ MonoBehaviour:
     sprDirection: {fileID: 287570853974410881}
     sprHere: {fileID: 654984182483679007}
   floorBtns:
-    btn:
+    btnUp:
       col: {fileID: 5619804819087966629}
 --- !u!1 &6639645678596808017
 GameObject:

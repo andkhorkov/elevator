@@ -5,7 +5,12 @@ using UnityEngine;
 [Serializable]
 public class FloorButtons
 {
+    public void Initialize(Floor floor)
+    {
+        btnUp.Initialize(floor);
+    }
 
+    public FloorBtn btnUp;
 }
 
 [Serializable]
@@ -47,10 +52,11 @@ public class Floor : MonoBehaviour
     public void Initialize(int id)
     {
         this.id = id;
+        floorBtns.Initialize(this);
     }
 
-    public void Test()
+    private void Update()
     {
-        Debug.Log("suka");
+        floorBtns.btnUp.Update();
     }
 }

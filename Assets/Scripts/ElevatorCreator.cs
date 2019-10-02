@@ -6,6 +6,7 @@ public class ElevatorCreator : MonoBehaviour
     [SerializeField] private int numFloors = 6;
     [SerializeField] private int numElevators = 1;
     [SerializeField] private float ceilToDoorOffset = 10;
+    [SerializeField] private float ceilWidth = 10;
     [SerializeField] private Vector2 desiredResolution = new Vector2(2880, 1800);
     [SerializeField] private Transform doorsTf;
     [SerializeField] private SpriteRenderer wall;
@@ -34,7 +35,7 @@ public class ElevatorCreator : MonoBehaviour
         origin.z = 0;
         doorsTf.position = new Vector3(doorsTf.position.x, origin.y + doorSize.y * 0.5f);
         var offset = desiredResolution.x * 0.5f * Vector3.right;
-        var ceilSize = new Vector2(desiredResolution.x, 10);
+        var ceilSize = new Vector2(desiredResolution.x, ceilWidth);
         var firstFloorPos = origin + offset;
 
         for (int i = 0; i < floorPositions.Length; ++i)
@@ -67,7 +68,7 @@ public class ElevatorCreator : MonoBehaviour
                 var floor = Instantiate(doorsPrefab, elevator.transform);
                 var id = j + 1;
                 floor.Initialize(id);
-                floor.transform.position = new Vector3(elevatorPos.x, floorPositions[j].y);
+                floor.transform.position = new Vector3(elevatorPos.x, floorPositions[j].y + 0.5f * ceilWidth);
                 floor.name = $"doors{id}";
                 floors[j] = floor;
             }
@@ -93,4 +94,14 @@ public class ElevatorCreator : MonoBehaviour
     //    Gizmos.color = Color.red;
     //    Gizmos.DrawSphere(Camera.main.ScreenToWorldPoint(Vector3.zero), 100);
     //}
+
+    void Update()
+    {
+        float unitsPerPixel = 2880f / Screen.width;
+
+        float desiredHalfHeight = 0.5f * unitsPerPixel * Screen.height;
+
+        Camera.main.orthographicSize = desiredHalfHeight;
+
+    }
 }
