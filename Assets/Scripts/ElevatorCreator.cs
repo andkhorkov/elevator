@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 
 public class ElevatorCreator : MonoBehaviour
@@ -13,19 +12,22 @@ public class ElevatorCreator : MonoBehaviour
 
     private Vector3 origin;
 
+    public static event Action ElevatorInitialized = delegate {  };
+
     private void Start()
     {
         SetCameraSize();
 
         var floorPositions = BuildFloors();
         BuildElevators(floorPositions);
+        ElevatorInitialized.Invoke();
     }
 
     private Vector3[] BuildFloors()
     {
         var ceiling = Resources.Load<SpriteRenderer>("ceiling");
-        var doors = Resources.Load<Floor>("doors");
-        var doorSize = doors.Size;
+        var doorsPrefab = Resources.Load<Floor>("floorElevatorDoors");
+        var doorSize = doorsPrefab.Size;
         var floorPositions = new Vector3[numFloors + 1];
 
         origin = Camera.main.ScreenToWorldPoint(Vector3.zero);
@@ -49,7 +51,7 @@ public class ElevatorCreator : MonoBehaviour
 
     private void BuildElevators(Vector3[] floorPositions)
     {
-        var doorsPrefab = Resources.Load<Floor>("doors");
+        var doorsPrefab = Resources.Load<Floor>("floorElevatorDoors");
         var cabinPrefab = Resources.Load("elevatorCabin");
 
         for (int i = 0; i < numElevators; i++)
@@ -63,8 +65,10 @@ public class ElevatorCreator : MonoBehaviour
             for (int j = 0; j < numFloors; j++)
             {
                 var floor = Instantiate(doorsPrefab, elevator.transform);
+                var id = j + 1;
+                floor.Initialize(id);
                 floor.transform.position = new Vector3(elevatorPos.x, floorPositions[j].y);
-                floor.name = $"doors{j + 1}";
+                floor.name = $"doors{id}";
                 floors[j] = floor;
             }
 
@@ -72,7 +76,8 @@ public class ElevatorCreator : MonoBehaviour
             cabin.transform.position = new Vector3(elevatorPos.x, floorPositions[0].y);
             cabin.name = $"cabin{i + 1}";
 
-            var elevatorController = new ElevatorController(floors);
+            var elevatorController = elevator.AddComponent<ElevatorController>();
+            elevatorController.Initialize(floors);
         }
     }
 
@@ -82,16 +87,6 @@ public class ElevatorCreator : MonoBehaviour
         Camera.main.orthographicSize = 0.5f * nativeToRealRatio * Screen.height;
         wall.size = new Vector2(wall.size.x, wall.size.x / Camera.main.aspect);
     }
-
-    //void Update()
-    //{
-    //    float unitsPerPixel = 2880f / Screen.width;
-
-    //    float desiredHalfHeight = 0.5f * unitsPerPixel * Screen.height;
-
-    //    Camera.main.orthographicSize = desiredHalfHeight;
-
-    //}
 
     //void OnDrawGizmos()
     //{
