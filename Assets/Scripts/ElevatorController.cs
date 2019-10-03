@@ -1,10 +1,13 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class ElevatorController : MonoBehaviour
 {
-    private FloorController[] floors;
+    private Floor.Controller[] floors;
 
-    public void Initialize(FloorController[] floors)
+    public event Action<int> FloorChanged = delegate { };
+
+    public void Initialize(Floor.Controller[] floors)
     {
         this.floors = floors;
     }

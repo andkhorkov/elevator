@@ -13,7 +13,7 @@ public class ElevatorCreator : MonoBehaviour
 
     private Vector3 origin;
 
-    public static event Action ElevatorInitialized = delegate {  };
+    public static event Action<ElevatorController> ElevatorInitialized = delegate {  };
 
     private void Start()
     {
@@ -21,13 +21,12 @@ public class ElevatorCreator : MonoBehaviour
 
         var floorPositions = BuildFloors();
         BuildElevators(floorPositions);
-        ElevatorInitialized.Invoke();
     }
 
     private Vector3[] BuildFloors()
     {
         var ceiling = Resources.Load<SpriteRenderer>("ceiling");
-        var doorsPrefab = Resources.Load<FloorController>("floorController");
+        var doorsPrefab = Resources.Load<Floor.Controller>("floorController");
         var doorSize = doorsPrefab.Size;
         var floorPositions = new Vector3[numFloors + 1];
 
@@ -52,32 +51,33 @@ public class ElevatorCreator : MonoBehaviour
 
     private void BuildElevators(Vector3[] floorPositions)
     {
-        var floorControllerPrefab = Resources.Load<FloorController>("floorController");
-        var cabinPrefab = Resources.Load("elevatorCabin");
+        var floorControllerPrefab = Resources.Load<Floor.Controller>("floorController");
+        var cabinPrefab = Resources.Load<Cabin.Controller>("elevatorCabin");
 
         for (int i = 0; i < numElevators; i++)
         {
             var elevator = new GameObject($"elevator{i + 1}");
+            var elevatorController = elevator.AddComponent<ElevatorController>();
             var elevatorPos = origin + 700 * Vector3.right * (i + 1);
             elevator.transform.position = elevatorPos;
             elevator.transform.SetParent(transform);
-            var floors = new FloorController[numFloors];
+            var floors = new Floor.Controller[numFloors];
 
             for (int j = 0; j < numFloors; j++)
             {
                 var floor = Instantiate(floorControllerPrefab, elevator.transform);
                 var id = j + 1;
-                floor.Initialize(id);
+                floor.Initialize(id, elevatorController);
                 floor.transform.position = new Vector3(elevatorPos.x, floorPositions[j].y + 0.5f * ceilWidth);
                 floor.name = $"doors{id}";
                 floors[j] = floor;
             }
 
-            var cabin = (GameObject) Instantiate(cabinPrefab, elevator.transform);
+            var cabin = Instantiate(cabinPrefab, elevator.transform);
             cabin.transform.position = new Vector3(elevatorPos.x, floorPositions[0].y);
             cabin.name = $"cabin{i + 1}";
-
-            var elevatorController = elevator.AddComponent<ElevatorController>();
+            cabin.Initialize(elevatorController);
+            
             elevatorController.Initialize(floors);
         }
     }

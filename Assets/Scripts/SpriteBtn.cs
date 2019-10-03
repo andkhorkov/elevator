@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 public interface IClickable
 {
@@ -10,11 +9,15 @@ public class SpriteBtn : MonoBehaviour
 {
     private Collider2D col;
     private IClickable context;
+    private SpriteRenderer sprRenderer;
+
+    public SpriteRenderer SprRenderer => sprRenderer;
 
     private void Awake()
     {
         col = GetComponent<Collider2D>();
         context = GetComponent<IClickable>();
+        sprRenderer = GetComponent<SpriteRenderer>();
     }
 
     private void Update()
