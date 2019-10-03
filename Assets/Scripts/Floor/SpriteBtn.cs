@@ -1,23 +1,23 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
-[Serializable]
-public class FloorBtn
+public interface IClickable
 {
-    [SerializeField] private Collider2D col;
+    void OnClick();
+}
 
-    private Floor floor;
+public class SpriteBtn : MonoBehaviour
+{
+    private Collider2D col;
+    private IClickable context;
 
-    public void Initialize(Floor floor)
+    private void Awake()
     {
-        this.floor = floor;
-        Debug.Log(floor.Id);
+        col = GetComponent<Collider2D>();
+        context = GetComponent<IClickable>();
     }
 
-    public void Update()
+    private void Update()
     {
         Vector3 clickPos = Vector3.zero;
         bool isClicked = false;
@@ -40,7 +40,7 @@ public class FloorBtn
 
             if (col == Physics2D.OverlapPoint(worldClickPos))
             {
-                Debug.Log(floor.Id);
+                context.OnClick();
             }
         }
     }

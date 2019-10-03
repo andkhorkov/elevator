@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class ElevatorController : MonoBehaviour
 {
-    private Floor[] floors;
+    private FloorController[] floors;
 
-    public void Initialize(Floor[] floors)
+    public void Initialize(FloorController[] floors)
     {
         this.floors = floors;
     }
