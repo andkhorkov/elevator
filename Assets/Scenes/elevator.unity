@@ -174,6 +174,7 @@ MonoBehaviour:
   numFloors: 6
   numElevators: 1
   ceilToDoorOffset: 10
+  ceilWidth: 10
   desiredResolution: {x: 2880, y: 1800}
   doorsTf: {fileID: 6639645678197436169, guid: 033b59fb83333e042b8beb57844bc7e7, type: 3}
   wall: {fileID: 1507850118}
@@ -281,14 +282,22 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &519420029
-AudioListener:
+--- !u!114 &519420029
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c49b4cc203aa6414fae5c798d1d0e7d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EventMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_MaxRayIntersections: 0
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
