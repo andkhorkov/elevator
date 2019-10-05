@@ -9,7 +9,6 @@ public class ElevatorCreator : MonoBehaviour
     [SerializeField] private float ceilToDoorOffset = 10;
     [SerializeField] private float ceilWidth = 10;
     [SerializeField] private Vector2 desiredResolution = new Vector2(2880, 1800);
-    [SerializeField] private Transform doorsTf;
     [SerializeField] private SpriteRenderer wall;
 
     private Vector3 origin;
@@ -33,7 +32,6 @@ public class ElevatorCreator : MonoBehaviour
 
         origin = Camera.main.ScreenToWorldPoint(Vector3.zero);
         origin.z = 0;
-        doorsTf.position = new Vector3(doorsTf.position.x, origin.y + doorSize.y * 0.5f);
         var offset = desiredResolution.x * 0.5f * Vector3.right;
         var ceilSize = new Vector2(desiredResolution.x, ceilWidth);
         var firstFloorPos = origin + offset;
@@ -57,7 +55,8 @@ public class ElevatorCreator : MonoBehaviour
 
         for (int i = 0; i < numElevators; i++)
         {
-            var elevator = new GameObject($"elevator{i + 1}");
+            var elevatorNum = i + 1;
+            var elevator = new GameObject($"elevator{elevatorNum}");
             var elevatorController = elevator.AddComponent<ElevatorController>();
             var elevatorPos = origin + 700 * Vector3.right * (i + 1);
             elevator.transform.position = elevatorPos;
