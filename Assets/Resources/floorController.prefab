@@ -685,6 +685,7 @@ MonoBehaviour:
   rightDoor: {fileID: 6639645678596808019}
   cycleTime: 10
   animator: {fileID: 7535628811992212707}
+  floorController: {fileID: 6639645678197436170}
 --- !u!95 &7535628811992212707
 Animator:
   serializedVersion: 3

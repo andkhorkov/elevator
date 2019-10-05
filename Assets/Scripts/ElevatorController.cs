@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Cabin;
+using Floor;
 using UnityEngine;
 
 public class ElevatorController : MonoBehaviour
@@ -8,7 +9,7 @@ public class ElevatorController : MonoBehaviour
     [SerializeField] private float speed = 800;
     [SerializeField] private float doorCycleTime = 10;
 
-    private Dictionary<int, Floor.FloorController> floors; // elevator might serve not all the floors, that's why it's a Dictionary
+    private Dictionary<int, FloorController> floors; // elevator might serve not all the floors, that's why it's a Dictionary
     private CabinController cabinController;
     private Transform cabin;
     private float currentDoorCycleTime;
@@ -19,33 +20,33 @@ public class ElevatorController : MonoBehaviour
     private State goingDownState;
     private State doorsCycleState;
 
+    private int goalFloorNum;
+    private int nextFloorNum;
+
+    public int CurrentFloorNum { get; private set; }
+
     public event Action<int> FloorChanged = delegate { };
 
     public event Action EnteredIdle = delegate { };
 
     public event Action<int> GoalFloorReached = delegate { };
     
-    public void Initialize(Dictionary<int, Floor.FloorController> floors, CabinController cabinController)
+    public void Initialize(Dictionary<int, FloorController> floors, CabinController cabinController)
     {
         this.floors = floors;
         this.cabinController = cabinController;
         cabin = cabinController.transform;
-        currentFloorNum = 1;
-        nextFloorNum = 2;
-        goalFloorNum = 6;
+        CurrentFloorNum = 1;
 
         idleState = new IdleState(this);
         goingUpState = new GoingUpState(this);
         goingDownState = new GoingDownState(this);
         doorsCycleState = new DoorsCycleState(this);
 
-        SetState(goingUpState);
-        FloorChanged.Invoke(currentFloorNum);
+        SetState(idleState);
+        FloorChanged.Invoke(CurrentFloorNum);
+        GoalFloorReached.Invoke(CurrentFloorNum);
     }
-
-    private int currentFloorNum;
-    private int goalFloorNum;
-    private int nextFloorNum;
 
     private void Update()
     {
@@ -66,21 +67,21 @@ public class ElevatorController : MonoBehaviour
     private void OnReachGoalFloor()
     {
         SetState(doorsCycleState);
-        GoalFloorReached.Invoke(currentFloorNum);
+        GoalFloorReached.Invoke(CurrentFloorNum);
     }
 
     public void MoveCabin()
     {
+        if (CurrentFloorNum == goalFloorNum)
+        {
+            OnReachGoalFloor();
+            return;
+        }
+
         if (Mathf.Approximately(Vector3.SqrMagnitude(cabin.position - floors[nextFloorNum].Position), 0))
         {
-            currentFloorNum = nextFloorNum;
-            FloorChanged.Invoke(currentFloorNum);
-
-            if (currentFloorNum == goalFloorNum)
-            {
-                OnReachGoalFloor();
-                return;
-            }
+            CurrentFloorNum = nextFloorNum;
+            FloorChanged.Invoke(CurrentFloorNum);
 
             do
             {
@@ -95,24 +96,23 @@ public class ElevatorController : MonoBehaviour
 
     public void OpenDoors()
     {
-        floors[currentFloorNum].OpenDoors();
+        floors[CurrentFloorNum].OpenDoors();
     }
 
     public void CloseDoors()
     {
-        floors[currentFloorNum].CloseDoors();
+        floors[CurrentFloorNum].CloseDoors();
+    }
+
+    public void OnDoorsClosed()
+    {
+        Debug.Log("closed");
+        SetState(idleState); // jump to next task
     }
 
     public void DoorsUpdate()
     {
-        if (currentDoorCycleTime > doorCycleTime)
-        {
-            currentDoorCycleTime = 0;
-            SetState(idleState); // todo: wait for open, wait for seconds, wait for close, then jump to next task
-            return;
-        }
-
-        currentDoorCycleTime += Time.deltaTime;
+        floors[CurrentFloorNum].DoorsUpdate();
     }
 
     public void OnEnteredIdle()

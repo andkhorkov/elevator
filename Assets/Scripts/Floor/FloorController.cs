@@ -30,12 +30,28 @@ namespace Floor
 
         public void OpenDoors()
         {
+            if (Num != elevator.CurrentFloorNum)
+            {
+                Debug.LogWarning("trying to kill people");
+                return;
+            }
+
             doorController.Open();
         }
 
         public void CloseDoors()
         {
             doorController.Close();
+        }
+
+        public void DoorsUpdate()
+        {
+            doorController.DoorsUpdate();
+        }
+
+        public void OnDoorsClosed()
+        {
+            elevator.OnDoorsClosed();
         }
 
         private void OnDestroy()
