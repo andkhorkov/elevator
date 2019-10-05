@@ -10,7 +10,7 @@ namespace Floor
 {
     public class Btn : MonoBehaviour, IClickable
     {
-        [SerializeField] private Controller floor;
+        [SerializeField] private FloorController floor;
         [SerializeField] private ElevatorDirection direction;
 
         private SpriteBtn sprBtn;

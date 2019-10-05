@@ -27,8 +27,8 @@ public class ElevatorCreator : MonoBehaviour
     private Vector3[] BuildFloors()
     {
         var ceiling = Resources.Load<SpriteRenderer>("ceiling");
-        var doorsPrefab = Resources.Load<Floor.Controller>("floorController");
-        var doorSize = doorsPrefab.Size;
+        var floorPrefab = Resources.Load<Floor.FloorController>("floorController");
+        var doorSize = floorPrefab.DoorController.DoorSize;
         var floorPositions = new Vector3[numFloors + 1];
 
         origin = Camera.main.ScreenToWorldPoint(Vector3.zero);
@@ -52,8 +52,8 @@ public class ElevatorCreator : MonoBehaviour
 
     private void BuildElevators(Vector3[] floorPositions)
     {
-        var floorControllerPrefab = Resources.Load<Floor.Controller>("floorController");
-        var cabinPrefab = Resources.Load<Cabin.Controller>("elevatorCabin");
+        var floorControllerPrefab = Resources.Load<Floor.FloorController>("floorController");
+        var cabinPrefab = Resources.Load<Cabin.CabinController>("elevatorCabin");
 
         for (int i = 0; i < numElevators; i++)
         {
@@ -62,7 +62,7 @@ public class ElevatorCreator : MonoBehaviour
             var elevatorPos = origin + 700 * Vector3.right * (i + 1);
             elevator.transform.position = elevatorPos;
             elevator.transform.SetParent(transform);
-            var floors = new Dictionary<int, Floor.Controller>(numFloors);
+            var floors = new Dictionary<int, Floor.FloorController>(numFloors);
 
             for (int j = 0; j < numFloors; j++)
             {

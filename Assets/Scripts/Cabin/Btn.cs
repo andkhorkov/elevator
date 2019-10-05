@@ -6,7 +6,7 @@ namespace Cabin
 {
     public class Btn : MonoBehaviour, IPointerClickHandler
     {
-        [SerializeField] private Controller cabin;
+        [SerializeField] private CabinController cabin;
         [SerializeField] private int floorNum;
 
         private Image sprBtn;

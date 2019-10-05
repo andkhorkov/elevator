@@ -2,7 +2,7 @@
 
 namespace Cabin
 {
-    public class Controller : MonoBehaviour
+    public class CabinController : MonoBehaviour
     {
         [SerializeField] private Display display;
 

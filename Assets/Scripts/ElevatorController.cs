@@ -6,17 +6,18 @@ public class ElevatorController : MonoBehaviour
 {
     [SerializeField] private float speed = 800;
 
-    private Dictionary<int, Floor.Controller> floors; // elevator might serve not all the floors, that's why it's a Dictionary
-    private Cabin.Controller cabinController;
+    private Dictionary<int, Floor.FloorController> floors; // elevator might serve not all the floors, that's why it's a Dictionary
+    private Cabin.CabinController cabinController;
     private Transform cabin;
     private State currentState;
     private State idleState;
     private State goingUpState;
     private State goingDownState;
+    private State doorsCycleState;
 
     public event Action<int> FloorChanged = delegate { };
     
-    public void Initialize(Dictionary<int, Floor.Controller> floors, Cabin.Controller cabinController)
+    public void Initialize(Dictionary<int, Floor.FloorController> floors, Cabin.CabinController cabinController)
     {
         this.floors = floors;
         this.cabinController = cabinController;
@@ -28,6 +29,8 @@ public class ElevatorController : MonoBehaviour
         idleState = new IdleState(this);
         goingUpState = new GoingUpState(this);
         goingDownState = new GoingDownState(this);
+        doorsCycleState = new DoorsCycleState(this);
+
         SetState(goingUpState);
     }
 
@@ -67,12 +70,17 @@ public class ElevatorController : MonoBehaviour
 
         if (currentFloorNum == goalFloorNum)
         {
-            SetState(idleState); // jump to next task
+            SetState(doorsCycleState); // jump to next task
             return;
         }
 
         cabin.position = Vector3.MoveTowards(cabin.transform.position,
             floors[nextFloorNum].Position, speed * Time.deltaTime);
+    }
+
+    public void DoorsUpdate()
+    {
+        floors[currentFloorNum].UpdateDoors(); // jump to next task
     }
 
     public abstract class State
@@ -132,6 +140,25 @@ public class ElevatorController : MonoBehaviour
     public class IdleState : State
     {
         public IdleState(ElevatorController elevator) : base(elevator)
+        {
+        }
+
+        public override void Update()
+        {
+        }
+
+        public override void OnEnter()
+        {
+        }
+
+        public override void OnLeave()
+        {
+        }
+    }
+
+    public class DoorsCycleState : State
+    {
+        public DoorsCycleState(ElevatorController elevator) : base(elevator)
         {
         }
 

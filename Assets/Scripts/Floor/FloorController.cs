@@ -2,21 +2,20 @@
 
 namespace Floor
 {
-    public class Controller : MonoBehaviour
+    public class FloorController : MonoBehaviour
     {
-        [SerializeField] private SpriteRenderer leftDoor;
-        [SerializeField] private SpriteRenderer rightDoor;
+        [SerializeField] private DoorController doorController;
         [SerializeField] private Display display;
         [SerializeField] private Btn btnUp;
         [SerializeField] private Btn btnDown;
 
         private ElevatorController elevator;
 
+        public DoorController DoorController => doorController;
+
         public int Num { get; private set; }
 
         public Vector3 Position { get; private set; }
-
-        public Vector2 Size => leftDoor.sprite.bounds.size;
 
         public void Initialize(int num, ElevatorController elevator)
         {
@@ -25,6 +24,11 @@ namespace Floor
             this.elevator = elevator;
 
             elevator.FloorChanged += OnFloorChanged;
+        }
+
+        public void UpdateDoors()
+        {
+
         }
 
         private void OnDestroy()
