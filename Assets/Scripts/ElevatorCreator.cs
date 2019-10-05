@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ElevatorCreator : MonoBehaviour
@@ -61,16 +62,16 @@ public class ElevatorCreator : MonoBehaviour
             var elevatorPos = origin + 700 * Vector3.right * (i + 1);
             elevator.transform.position = elevatorPos;
             elevator.transform.SetParent(transform);
-            var floors = new Floor.Controller[numFloors];
+            var floors = new Dictionary<int, Floor.Controller>(numFloors);
 
             for (int j = 0; j < numFloors; j++)
             {
                 var floor = Instantiate(floorControllerPrefab, elevator.transform);
-                var id = j + 1;
-                floor.Initialize(id, elevatorController);
+                var floorNum = j + 1;
                 floor.transform.position = new Vector3(elevatorPos.x, floorPositions[j].y + 0.5f * ceilWidth);
-                floor.name = $"doors{id}";
-                floors[j] = floor;
+                floor.name = $"doors{floorNum}";
+                floors[floorNum] = floor;
+                floor.Initialize(floorNum, elevatorController);
             }
 
             var cabin = Instantiate(cabinPrefab, elevator.transform);
@@ -78,7 +79,7 @@ public class ElevatorCreator : MonoBehaviour
             cabin.name = $"cabin{i + 1}";
             cabin.Initialize(elevatorController);
             
-            elevatorController.Initialize(floors);
+            elevatorController.Initialize(floors, cabin);
         }
     }
 

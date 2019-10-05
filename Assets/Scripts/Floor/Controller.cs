@@ -9,15 +9,19 @@ namespace Floor
         [SerializeField] private Display display;
         [SerializeField] private Btn btnUp;
         [SerializeField] private Btn btnDown;
+
         private ElevatorController elevator;
 
-        public int Id { get; private set; }
+        public int Num { get; private set; }
+
+        public Vector3 Position { get; private set; }
 
         public Vector2 Size => leftDoor.sprite.bounds.size;
 
-        public void Initialize(int id, ElevatorController elevator)
+        public void Initialize(int num, ElevatorController elevator)
         {
-            Id = id;
+            Num = num;
+            Position = transform.position;
             this.elevator = elevator;
 
             elevator.FloorChanged += OnFloorChanged;
@@ -30,7 +34,7 @@ namespace Floor
 
         public void OnButtonClicked(ElevatorDirection direction)
         {
-            Debug.Log($"{Id} : {direction}");
+            Debug.Log($"{Num} : {direction}");
         }
 
         private void OnFloorChanged(int floorNum)

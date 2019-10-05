@@ -11,7 +11,7 @@ namespace Floor
 
         public void OnFloorChanged(int floorNum)
         {
-            Debug.Log(floorNum);
+            lblCurrentFloor.text = floorNum.ToString();
         }
     }
 }
