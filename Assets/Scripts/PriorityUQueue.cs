@@ -1,22 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public class PriorityQueue<T> where T : IComparable<T>
+public class PriorityUQueue<T> where T : IComparable<T>
 {
     private List<T> data;
+    private HashSet<T> set;
 
     public int Count => data.Count;
 
     public T Peek => data[0];
 
-    public PriorityQueue()
+    public PriorityUQueue()
     {
         data = new List<T>();
+        set = new HashSet<T>();
+    }
+
+    public bool Contains(T item)
+    {
+        return set.Contains(item);
+    }
+
+    public void Remove(T item)
+    {
+        data.Remove(item);
+        set.Remove(item);
+        Heapify(0, data.Count - 1);
     }
 
     public void Enqueue(T item)
     {
+        if (set.Contains(item))
+        {
+            return;
+        }
+
         data.Add(item);
+        set.Add(item);
         var child = data.Count - 1;
 
         while (child > 0)
@@ -33,23 +53,15 @@ public class PriorityQueue<T> where T : IComparable<T>
         }
     }
 
-    private void Swap(int a, int b, IList<T> data)
+    private static void Swap(int a, int b, IList<T> val)
     {
-        var temp = data[a];
-        data[a] = data[b];
-        data[b] = temp;
+        var temp = val[a];
+        val[a] = val[b];
+        val[b] = temp;
     }
 
-    public T Dequeue()
+    private void Heapify(int parent, int last)
     {
-        var last = data.Count - 1; 
-        var firstElement = data[0];   
-        data[0] = data[last];
-        data.RemoveAt(last);
-
-        --last; 
-        var parent = 0; 
-
         while (true)
         {
             int lChild = parent * 2 + 1;
@@ -57,7 +69,7 @@ public class PriorityQueue<T> where T : IComparable<T>
             if (lChild > last)
             {
                 break;
-            }  
+            }
 
             var rChild = lChild + 1;
 
@@ -74,6 +86,21 @@ public class PriorityQueue<T> where T : IComparable<T>
             Swap(parent, lChild, data);
             parent = lChild;
         }
+    }
+
+    public T Dequeue()
+    {
+        var last = data.Count - 1; 
+        var firstElement = data[0];   
+        data[0] = data[last];
+        data.RemoveAt(last);
+
+        --last; 
+        var parent = 0; 
+
+        Heapify(parent, last);
+
+        set.Remove(firstElement);
 
         return firstElement;
     }

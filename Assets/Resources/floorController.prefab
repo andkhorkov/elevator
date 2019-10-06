@@ -372,8 +372,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6639645677661747432}
-  - component: {fileID: 6639645677661747433}
   - component: {fileID: 5208508221563604272}
+  - component: {fileID: 6639645677661747433}
   - component: {fileID: 5264539118962424858}
   - component: {fileID: 5572403896742982324}
   m_Layer: 0
@@ -397,6 +397,18 @@ Transform:
   m_Father: {fileID: 6639645677165853172}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5208508221563604272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6639645677661747439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 688144e516d3cf14c9d43df427d03d74, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!212 &6639645677661747433
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -446,18 +458,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &5208508221563604272
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6639645677661747439}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 688144e516d3cf14c9d43df427d03d74, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &5264539118962424858
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -683,7 +683,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   leftDoor: {fileID: 6639645677321115441}
   rightDoor: {fileID: 6639645678596808019}
-  cycleTime: 10
+  cycleTime: 1
   animator: {fileID: 7535628811992212707}
   floorController: {fileID: 6639645678197436170}
 --- !u!95 &7535628811992212707
@@ -1144,8 +1144,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lblCurrentFloor: {fileID: 6639645677907581704}
-  sprDirection: {fileID: 287570853974410881}
-  sprHere: {fileID: 654984182483679007}
+  sprDirection: {fileID: 6639645676618778160}
+  sprDirectionCg: {fileID: 287570853974410881}
+  sprHereCg: {fileID: 654984182483679007}
 --- !u!1 &6639645678197436168
 GameObject:
   m_ObjectHideFlags: 0

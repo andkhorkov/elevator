@@ -73,6 +73,9 @@ public class ElevatorCreator : MonoBehaviour
                 floor.Initialize(floorNum, elevatorController);
             }
 
+            floors[1].SwitchOffDownBtn();
+            floors[numFloors].SwitchOffUpBtn();
+
             var cabin = Instantiate(cabinPrefab, elevator.transform);
             cabin.transform.position = new Vector3(elevatorPos.x, floorPositions[0].y);
             cabin.name = $"cabin{i + 1}";

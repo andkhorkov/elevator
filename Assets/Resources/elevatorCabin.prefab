@@ -1584,6 +1584,7 @@ GameObject:
   - component: {fileID: 8301694315171082714}
   - component: {fileID: 8301694315171082713}
   - component: {fileID: 7672083357413249552}
+  - component: {fileID: 2714811459681265792}
   m_Layer: 0
   m_Name: elevatorCabin
   m_TagString: Untagged
@@ -1668,6 +1669,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   display: {fileID: 3289938481601993139}
+  cg: {fileID: 2714811459681265792}
+  fadeInTime: 0.25
+--- !u!225 &2714811459681265792
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8301694315171082715}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &8301694315379691419
 GameObject:
   m_ObjectHideFlags: 0

@@ -6,8 +6,8 @@ namespace Floor
     {
         [SerializeField] private DoorController doorController;
         [SerializeField] private Display display;
-        [SerializeField] private Btn btnUp;
-        [SerializeField] private Btn btnDown;
+        [SerializeField] private FloorBtn btnUp;
+        [SerializeField] private FloorBtn btnDown;
 
         private ElevatorController elevator;
 
@@ -25,7 +25,12 @@ namespace Floor
 
             elevator.FloorChanged += OnFloorChanged;
             elevator.EnteredIdle += OnEnteredIdle;
-            elevator.GoalFloorReached += OnGoalFloorReached;
+            elevator.DirectionChanged += OnDirectionChanged;
+        }
+
+        public void OnDirectionChanged(ElevatorDirection direction)
+        {
+            display.OnDirectionChanged(direction);
         }
 
         public void OpenDoors()
@@ -54,16 +59,26 @@ namespace Floor
             elevator.OnDoorsClosed();
         }
 
+        public void SwitchOffDownBtn()
+        {
+            btnDown.gameObject.SetActive(false);
+        }
+
+        public void SwitchOffUpBtn()
+        {
+            btnUp.gameObject.SetActive(false);
+        }
+
         private void OnDestroy()
         {
             elevator.FloorChanged -= OnFloorChanged;
             elevator.EnteredIdle -= OnEnteredIdle;
-            elevator.GoalFloorReached -= OnGoalFloorReached;
+            elevator.DirectionChanged -= OnDirectionChanged;
         }
 
         public void OnButtonClicked(ElevatorDirection direction)
         {
-            Debug.Log($"{Num} : {direction}");
+            elevator.AddRequest(Num, direction);
         }
 
         private void OnFloorChanged(int floorNum)
@@ -76,7 +91,7 @@ namespace Floor
             display.OnEnteredIdle();
         }
 
-        private void OnGoalFloorReached(int floorNum)
+        public void OnGoalFloorReached(int floorNum, ElevatorDirection direction)
         {
             if (floorNum != Num)
             {
@@ -84,6 +99,8 @@ namespace Floor
             }
 
             display.OnGoalFloorReached();
+            btnUp.OnGoalFloorReached(direction);
+            btnDown.OnGoalFloorReached(direction);
         }
     }
 }

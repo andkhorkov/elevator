@@ -9,15 +9,14 @@ public class SpriteBtn : MonoBehaviour
 {
     private Collider2D col;
     private IClickable context;
-    private SpriteRenderer sprRenderer;
 
-    public SpriteRenderer SprRenderer => sprRenderer;
+    public SpriteRenderer SprRenderer { get; private set; }
 
     private void Awake()
     {
         col = GetComponent<Collider2D>();
         context = GetComponent<IClickable>();
-        sprRenderer = GetComponent<SpriteRenderer>();
+        SprRenderer = GetComponent<SpriteRenderer>();
     }
 
     private void Update()
