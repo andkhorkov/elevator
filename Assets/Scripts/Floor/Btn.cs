@@ -1,11 +1,5 @@
 ﻿using UnityEngine;
 
-public enum ElevatorDirection
-{
-    up,
-    down
-}
-
 namespace Floor
 {
     public class Btn : MonoBehaviour, IClickable

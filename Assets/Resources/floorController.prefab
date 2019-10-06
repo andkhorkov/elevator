@@ -683,7 +683,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   leftDoor: {fileID: 6639645677321115441}
   rightDoor: {fileID: 6639645678596808019}
-  cycleTime: 10
+  cycleTime: 1
   animator: {fileID: 7535628811992212707}
   floorController: {fileID: 6639645678197436170}
 --- !u!95 &7535628811992212707

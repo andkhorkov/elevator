@@ -64,6 +64,7 @@ namespace Floor
         public void OnButtonClicked(ElevatorDirection direction)
         {
             Debug.Log($"{Num} : {direction}");
+            elevator.AddRequest(Num, direction);
         }
 
         private void OnFloorChanged(int floorNum)
