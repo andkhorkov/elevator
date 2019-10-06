@@ -25,7 +25,12 @@ namespace Floor
 
             elevator.FloorChanged += OnFloorChanged;
             elevator.EnteredIdle += OnEnteredIdle;
-            elevator.GoalFloorReached += OnGoalFloorReached;
+            elevator.DirectionChanged += OnDirectionChanged;
+        }
+
+        public void OnDirectionChanged(ElevatorDirection direction)
+        {
+            display.OnDirectionChanged(direction);
         }
 
         public void OpenDoors()
@@ -58,7 +63,7 @@ namespace Floor
         {
             elevator.FloorChanged -= OnFloorChanged;
             elevator.EnteredIdle -= OnEnteredIdle;
-            elevator.GoalFloorReached -= OnGoalFloorReached;
+            elevator.DirectionChanged -= OnDirectionChanged;
         }
 
         public void OnButtonClicked(ElevatorDirection direction)
@@ -77,7 +82,7 @@ namespace Floor
             display.OnEnteredIdle();
         }
 
-        private void OnGoalFloorReached(int floorNum)
+        public void OnGoalFloorReached(int floorNum, ElevatorDirection direction)
         {
             if (floorNum != Num)
             {
@@ -85,6 +90,8 @@ namespace Floor
             }
 
             display.OnGoalFloorReached();
+            btnUp.OnGoalFloorReached(direction);
+            btnDown.OnGoalFloorReached(direction);
         }
     }
 }

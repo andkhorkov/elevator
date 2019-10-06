@@ -56,7 +56,7 @@ public class ElevatorController : MonoBehaviour
 
     public event Action EnteredIdle = delegate { };
 
-    public event Action<int> GoalFloorReached = delegate { };
+    public event Action<ElevatorDirection> DirectionChanged = delegate { }; 
     
     public void Initialize(Dictionary<int, FloorController> floors, CabinController cabinController)
     {
@@ -73,7 +73,7 @@ public class ElevatorController : MonoBehaviour
 
         SetState(idleState);
         FloorChanged.Invoke(CurrentFloorNum);
-        GoalFloorReached.Invoke(CurrentFloorNum);
+        floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, ElevatorDirection.none);
     }
 
     private void Update()
@@ -95,15 +95,16 @@ public class ElevatorController : MonoBehaviour
     private void OnReachGoalFloor()
     {
         SetState(doorsCycleState);
-        GoalFloorReached.Invoke(CurrentFloorNum);
+        floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, currentDirectionRequests.First.Value.DesiredDirection);
     }
 
-    public void AddRequest(int floorNum, ElevatorDirection direction)
+    public void AddRequest(int floorNum, ElevatorDirection desiredDirection)
     {
         if (currentState == idleState)
         {
             movingDirection = GetDirectionToRequestedFloor(floorNum, CurrentFloorNum);
-            currentDirectionRequests.AddFirst(new Request(movingDirection, floorNum));
+            DirectionChanged.Invoke(movingDirection);
+            currentDirectionRequests.AddFirst(new Request(desiredDirection, floorNum));
             SetState(movingState);
             return;
         }
@@ -136,9 +137,16 @@ public class ElevatorController : MonoBehaviour
 
             do
             {
-                nextFloorNum++;
+                if (movingDirection == ElevatorDirection.up)
+                {
+                    ++nextFloorNum;
+                }
+                else
+                {
+                    --nextFloorNum;
+                }
 
-                if (nextFloorNum > floors.Count)
+                if (nextFloorNum <= 0 || nextFloorNum > floors.Count)
                 {
                     return;
                 }
