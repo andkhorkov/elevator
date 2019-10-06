@@ -145,7 +145,7 @@ public class ElevatorController : MonoBehaviour
                     break;
                 }
 
-                if ((request.FloorNum - node.Value.FloorNum) * (request.DesiredDirection == ElevatorDirection.up ? 1 : -1) < 0)
+                if ((request.FloorNum - node.Value.FloorNum) * (request.DesiredDirection == ElevatorDirection.down ? 1 : -1) > 0)
                 {
                     oppositeRequests.AddBefore(node, request);
                     break;
@@ -164,9 +164,16 @@ public class ElevatorController : MonoBehaviour
         }
         else
         {
-            
+            if (oppositeRequests.Count > 0)
+            {
+                Debug.Log("yes");
+            }
+            else
+            {
+                Debug.Log("no");
+            }
 
-            //todo: direction match, but floor is in other direction relative to cabin. Check wether we have opposite requests already. and if so then put new requests here to delayed requests list
+            //todo: direction match, but floor is in other direction relative to cabin. Check whether we have opposite requests already. and if so then put new requests here to delayed requests list
         }
 
         currentRequest = currentDirectionRequests.First.Value;
