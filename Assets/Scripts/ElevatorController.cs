@@ -46,7 +46,6 @@ public class ElevatorController : MonoBehaviour
     private LinkedList<Request> currentDirectionRequests = new LinkedList<Request>();
     private LinkedList<Request> oppositeRequests = new LinkedList<Request>();
     private LinkedList<Request> delayedRequests = new LinkedList<Request>();
-    private LinkedList<Request> currentRequests;
     private Request currentRequest;
 
     private int nextFloorNum;
@@ -135,38 +134,21 @@ public class ElevatorController : MonoBehaviour
         }
         else if (request.DesiredDirection != currentRequest.DesiredDirection)
         {
-            var node = oppositeRequests.First;
-
-            while (true)
-            {
-                if (node == null)
-                {
-                    oppositeRequests.AddLast(request);
-                    break;
-                }
-
-                if ((request.FloorNum - node.Value.FloorNum) * (request.DesiredDirection == ElevatorDirection.down ? 1 : -1) > 0)
-                {
-                    oppositeRequests.AddBefore(node, request);
-                    break;
-                }
-
-                node = node.Next;
-            }
+            Temp(request, ElevatorDirection.down, oppositeRequests);
         }
         else if (movingDirection != desiredDirection)
         {
-            Temp(desiredFloorNum, request, ElevatorDirection.up);
+            Temp(request, ElevatorDirection.up, currentDirectionRequests);
         }
         else if ((desiredFloorNum - CurrentFloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0)
         {
-            Temp(desiredFloorNum, request, ElevatorDirection.down);
+            Temp(request, ElevatorDirection.down, currentDirectionRequests);
         }
         else
         {
             if (oppositeRequests.Count > 0)
             {
-                Debug.Log("yes");
+                Temp(request, ElevatorDirection.down, delayedRequests);
             }
             else
             {
@@ -180,25 +162,25 @@ public class ElevatorController : MonoBehaviour
         PrintRequests();
     }
 
-    private void Temp(int desiredFloorNum, Request request, ElevatorDirection dir)
+    private void Temp(Request request, ElevatorDirection dir, LinkedList<Request> requests)
     {
-        var node = currentDirectionRequests.First;
+        var node = requests.First;
 
         while (true)
         {
-            if ((desiredFloorNum - node.Value.FloorNum) * (movingDirection == dir ? 1 : -1) > 0)
+            if (node == null)
             {
-                currentDirectionRequests.AddBefore(node, request);
+                requests.AddLast(request);
+                break;
+            }
+
+            if ((request.FloorNum - node.Value.FloorNum) * (movingDirection == dir ? 1 : -1) > 0)
+            {
+                requests.AddBefore(node, request);
                 break;
             }
 
             node = node.Next;
-
-            if (node == null)
-            {
-                currentDirectionRequests.AddLast(request);
-                break;
-            }
         }
     }
 
