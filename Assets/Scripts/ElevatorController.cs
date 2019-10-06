@@ -141,54 +141,24 @@ public class ElevatorController : MonoBehaviour
 
         if (movingDirection != desiredDirection)
         {
-            if (movingDirection == ElevatorDirection.up)
+            var node = currentDirectionRequests.First;
+
+            while (node != null)
             {
-                if (desiredFloorNum > CurrentFloorNum)
+                if ((desiredFloorNum - node.Value.FloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0)
                 {
-                    var node = currentDirectionRequests.First;
-
-                    while (node != null)
-                    {
-                        if (node.Value.FloorNum < desiredFloorNum)
-                        {
-                            currentDirectionRequests.AddBefore(node, request);
-                            currentRequest = request;
-                            PrintRequests();
-                            return;
-                        }
-
-                        node = node.Next;
-                    }
-
-                    currentDirectionRequests.AddLast(request);
+                    currentDirectionRequests.AddBefore(node, request);
+                    currentRequest = request;
                     PrintRequests();
                     return;
                 }
+
+                node = node.Next;
             }
-            else if (movingDirection == ElevatorDirection.down)
-            {
-                if (desiredFloorNum < CurrentFloorNum)
-                {
-                    var node = currentDirectionRequests.First;
 
-                    while (node != null)
-                    {
-                        if (node.Value.FloorNum > desiredFloorNum)
-                        {
-                            currentDirectionRequests.AddBefore(node, request);
-                            currentRequest = request;
-                            PrintRequests();
-                            return;
-                        }
-
-                        node = node.Next;
-                    }
-
-                    currentDirectionRequests.AddLast(request);
-                    PrintRequests();
-                    return;
-                }
-            }
+            currentDirectionRequests.AddLast(request);
+            PrintRequests();
+            return;
         }
         else if(movingDirection == ElevatorDirection.down)
         {
