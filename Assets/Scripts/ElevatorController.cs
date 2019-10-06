@@ -139,6 +139,33 @@ public class ElevatorController : MonoBehaviour
             return;
         }
 
+        if (request.DesiredDirection != currentRequest.DesiredDirection)
+        {
+            var node = oppositeRequests.First;
+
+            while (node != null)
+            {
+                if(request.DesiredDirection == ElevatorDirection.up && request.FloorNum < node.Value.FloorNum)
+                {
+                    oppositeRequests.AddBefore(node, request);
+                    PrintRequests();
+                    return;
+                }
+
+                if (request.DesiredDirection == ElevatorDirection.down && request.FloorNum > node.Value.FloorNum)
+                {
+                    oppositeRequests.AddBefore(node, request);
+                    PrintRequests();
+                    return;
+                }
+
+                node = node.Next;
+            }
+
+            oppositeRequests.AddLast(request);
+            return;
+        }
+
         if (movingDirection != desiredDirection)
         {
             var node = currentDirectionRequests.First;
@@ -148,7 +175,7 @@ public class ElevatorController : MonoBehaviour
                 if ((desiredFloorNum - node.Value.FloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0)
                 {
                     currentDirectionRequests.AddBefore(node, request);
-                    currentRequest = request;
+                    currentRequest = currentDirectionRequests.First.Value;
                     PrintRequests();
                     return;
                 }
@@ -160,53 +187,27 @@ public class ElevatorController : MonoBehaviour
             PrintRequests();
             return;
         }
-        else if(movingDirection == ElevatorDirection.down)
+
+        if ((desiredFloorNum - CurrentFloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0)
         {
-            if (desiredFloorNum < CurrentFloorNum)
+            var node = currentDirectionRequests.First;
+
+            while (node != null)
             {
-                var node = currentDirectionRequests.First;
-
-                while (node != null)
+                if ((desiredFloorNum - node.Value.FloorNum) * (movingDirection == ElevatorDirection.down ? 1 : -1) > 0)
                 {
-                    if (node.Value.FloorNum < desiredFloorNum)
-                    {
-                        currentDirectionRequests.AddBefore(node, request);
-                        currentRequest = request;
-                        PrintRequests();
-                        return;
-                    }
-
-                    node = node.Next;
+                    currentDirectionRequests.AddBefore(node, request);
+                    currentRequest = currentDirectionRequests.First.Value;
+                    PrintRequests();
+                    return;
                 }
 
-                currentDirectionRequests.AddLast(request);
-                PrintRequests();
-                return;
+                node = node.Next;
             }
-        }
-        else if (movingDirection == ElevatorDirection.up)
-        {
-            if (desiredFloorNum > CurrentFloorNum)
-            {
-                var node = currentDirectionRequests.First;
 
-                while (node != null)
-                {
-                    if (node.Value.FloorNum > desiredFloorNum)
-                    {
-                        currentDirectionRequests.AddBefore(node, request);
-                        currentRequest = request;
-                        PrintRequests();
-                        return;
-                    }
-
-                    node = node.Next;
-                }
-
-                currentDirectionRequests.AddLast(request);
-                PrintRequests();
-                return;
-            }
+            currentDirectionRequests.AddLast(request);
+            PrintRequests();
+            return;
         }
     }
 
@@ -215,6 +216,19 @@ public class ElevatorController : MonoBehaviour
         var root = currentDirectionRequests.First;
         var sb = new StringBuilder();
 
+        sb.Append("current:\n");
+
+        while (root != null)
+        {
+            var request = root.Value;
+            sb.Append($"{request.FloorNum}:{request.DesiredDirection},  ");
+
+            root = root.Next;
+        }
+
+        sb.Append("\nopposite:\n");
+
+        root = oppositeRequests.First;
         while (root != null)
         {
             var request = root.Value;
@@ -257,6 +271,7 @@ public class ElevatorController : MonoBehaviour
                 if (movingDirection == ElevatorDirection.up)
                 {
                     ++nextFloorNum;
+                    
                 }
                 else
                 {
