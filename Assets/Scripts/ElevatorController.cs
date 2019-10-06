@@ -27,7 +27,7 @@ public class ElevatorController : MonoBehaviour
         }
     }
 
-    [SerializeField] private float speed = 800;
+    [SerializeField] private float speed = 400;
     [SerializeField] private float doorCycleTime = 4;
 
     private Dictionary<int, FloorController> floors; // elevator might serve not all the floors, that's why it's a Dictionary
@@ -49,7 +49,6 @@ public class ElevatorController : MonoBehaviour
     private LinkedList<Request> currentRequests;
     private Request currentRequest;
 
-    private int goalFloorNum;
     private int nextFloorNum;
 
     public int CurrentFloorNum { get; private set; }
@@ -103,12 +102,14 @@ public class ElevatorController : MonoBehaviour
     private void JumpToNextRequest()
     {
         var node = currentDirectionRequests.First.Next;
+        currentDirectionRequests.RemoveFirst();
 
         if (node == null)
         {
             if (oppositeRequests.Count == 0)
             {
                 SetState(idleState);
+                PrintRequests();
                 return;
             }
 
@@ -121,14 +122,13 @@ public class ElevatorController : MonoBehaviour
         }
 
         currentRequest = node.Value;
-        currentDirectionRequests.RemoveFirst();
         SetState(movingState);
         PrintRequests();
     }
 
-    public void AddRequest(int floorNum, ElevatorDirection desiredDirection)
+    public void AddRequest(int desiredFloorNum, ElevatorDirection desiredDirection)
     {
-        var request = new Request(desiredDirection, floorNum);
+        var request = new Request(desiredDirection, desiredFloorNum);
 
         if (currentState == idleState)
         {
@@ -141,17 +141,91 @@ public class ElevatorController : MonoBehaviour
 
         if (movingDirection != desiredDirection)
         {
-            if (floorNum > CurrentFloorNum)
+            if (movingDirection == ElevatorDirection.up)
+            {
+                if (desiredFloorNum > CurrentFloorNum)
+                {
+                    var node = currentDirectionRequests.First;
+
+                    while (node != null)
+                    {
+                        if (node.Value.FloorNum < desiredFloorNum)
+                        {
+                            currentDirectionRequests.AddBefore(node, request);
+                            currentRequest = request;
+                            PrintRequests();
+                            return;
+                        }
+
+                        node = node.Next;
+                    }
+
+                    currentDirectionRequests.AddLast(request);
+                    PrintRequests();
+                    return;
+                }
+            }
+            else if (movingDirection == ElevatorDirection.down)
+            {
+                if (desiredFloorNum < CurrentFloorNum)
+                {
+                    var node = currentDirectionRequests.First;
+
+                    while (node != null)
+                    {
+                        if (node.Value.FloorNum > desiredFloorNum)
+                        {
+                            currentDirectionRequests.AddBefore(node, request);
+                            currentRequest = request;
+                            PrintRequests();
+                            return;
+                        }
+
+                        node = node.Next;
+                    }
+
+                    currentDirectionRequests.AddLast(request);
+                    PrintRequests();
+                    return;
+                }
+            }
+        }
+        else if(movingDirection == ElevatorDirection.down)
+        {
+            if (desiredFloorNum < CurrentFloorNum)
             {
                 var node = currentDirectionRequests.First;
 
                 while (node != null)
                 {
-                    if (node.Value.FloorNum < floorNum)
+                    if (node.Value.FloorNum < desiredFloorNum)
                     {
                         currentDirectionRequests.AddBefore(node, request);
                         currentRequest = request;
-                        goalFloorNum = request.FloorNum;
+                        PrintRequests();
+                        return;
+                    }
+
+                    node = node.Next;
+                }
+
+                currentDirectionRequests.AddLast(request);
+                PrintRequests();
+                return;
+            }
+        }
+        else if (movingDirection == ElevatorDirection.up)
+        {
+            if (desiredFloorNum > CurrentFloorNum)
+            {
+                var node = currentDirectionRequests.First;
+
+                while (node != null)
+                {
+                    if (node.Value.FloorNum > desiredFloorNum)
+                    {
+                        currentDirectionRequests.AddBefore(node, request);
+                        currentRequest = request;
                         PrintRequests();
                         return;
                     }
@@ -187,7 +261,6 @@ public class ElevatorController : MonoBehaviour
         var request = currentDirectionRequests.First.Value;
         movingDirection = GetDirectionToRequestedFloor(request.FloorNum, CurrentFloorNum);
         DirectionChanged.Invoke(movingDirection);
-        goalFloorNum = request.FloorNum;
         nextFloorNum = movingDirection == ElevatorDirection.up ? CurrentFloorNum + 1 : CurrentFloorNum - 1;
     }
 
@@ -198,7 +271,7 @@ public class ElevatorController : MonoBehaviour
 
     public void MoveCabin()
     {
-        if (CurrentFloorNum == goalFloorNum)
+        if (CurrentFloorNum == currentRequest.FloorNum)
         {
             OnReachGoalFloor();
             return;
