@@ -145,13 +145,7 @@ public class ElevatorController : MonoBehaviour
                     break;
                 }
 
-                if (request.DesiredDirection == ElevatorDirection.up && request.FloorNum < node.Value.FloorNum)
-                {
-                    oppositeRequests.AddBefore(node, request);
-                    break;
-                }
-
-                if (request.DesiredDirection == ElevatorDirection.down && request.FloorNum > node.Value.FloorNum)
+                if ((request.FloorNum - node.Value.FloorNum) * (request.DesiredDirection == ElevatorDirection.up ? 1 : -1) < 0)
                 {
                     oppositeRequests.AddBefore(node, request);
                     break;
@@ -162,49 +156,43 @@ public class ElevatorController : MonoBehaviour
         }
         else if (movingDirection != desiredDirection)
         {
-            var node = currentDirectionRequests.First;
-
-            while (true)
-            {
-                if ((desiredFloorNum - node.Value.FloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0)
-                {
-                    currentDirectionRequests.AddBefore(node, request);
-                    break;
-                }
-
-                node = node.Next;
-
-                if (node == null)
-                {
-                    currentDirectionRequests.AddLast(request);
-                    break;
-                }
-            }
+            Temp(desiredFloorNum, request, ElevatorDirection.up);
         }
         else if ((desiredFloorNum - CurrentFloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0)
         {
-            var node = currentDirectionRequests.First;
+            Temp(desiredFloorNum, request, ElevatorDirection.down);
+        }
+        else
+        {
+            
 
-            while (true)
-            {
-                if ((desiredFloorNum - node.Value.FloorNum) * (movingDirection == ElevatorDirection.down ? 1 : -1) > 0)
-                {
-                    currentDirectionRequests.AddBefore(node, request);
-                    break;
-                }
-
-                node = node.Next;
-
-                if (node == null)
-                {
-                    currentDirectionRequests.AddLast(request);
-                    break;
-                }
-            }
+            //todo: direction match, but floor is in other direction relative to cabin. Check wether we have opposite requests already. and if so then put new requests here to delayed requests list
         }
 
         currentRequest = currentDirectionRequests.First.Value;
         PrintRequests();
+    }
+
+    private void Temp(int desiredFloorNum, Request request, ElevatorDirection dir)
+    {
+        var node = currentDirectionRequests.First;
+
+        while (true)
+        {
+            if ((desiredFloorNum - node.Value.FloorNum) * (movingDirection == dir ? 1 : -1) > 0)
+            {
+                currentDirectionRequests.AddBefore(node, request);
+                break;
+            }
+
+            node = node.Next;
+
+            if (node == null)
+            {
+                currentDirectionRequests.AddLast(request);
+                break;
+            }
+        }
     }
 
     private void PrintRequests()
