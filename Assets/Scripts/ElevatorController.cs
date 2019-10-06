@@ -152,7 +152,7 @@ public class ElevatorController : MonoBehaviour
             }
             else
             {
-                Debug.Log("no");
+                Temp(request, ElevatorDirection.up, currentDirectionRequests);
             }
 
             //todo: direction match, but floor is in other direction relative to cabin. Check whether we have opposite requests already. and if so then put new requests here to delayed requests list
@@ -202,6 +202,17 @@ public class ElevatorController : MonoBehaviour
         sb.Append("\nopposite:\n");
 
         root = oppositeRequests.First;
+        while (root != null)
+        {
+            var request = root.Value;
+            sb.Append($"{request.FloorNum}:{request.DesiredDirection},  ");
+
+            root = root.Next;
+        }
+
+        sb.Append("\ndelayed:\n");
+
+        root = delayedRequests.First;
         while (root != null)
         {
             var request = root.Value;
