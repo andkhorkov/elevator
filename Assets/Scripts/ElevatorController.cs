@@ -114,14 +114,12 @@ public class ElevatorController : MonoBehaviour
             }
 
             currentDirectionRequests = oppositeRequests;
+
             oppositeRequests = delayedRequests;
-            currentRequest = currentDirectionRequests.First.Value;
-            PrintRequests();
             SetState(movingState);
-            return;
         }
 
-        currentRequest = node.Value;
+        currentRequest = currentDirectionRequests.First.Value;
         SetState(movingState);
         PrintRequests();
     }
@@ -132,83 +130,81 @@ public class ElevatorController : MonoBehaviour
 
         if (currentState == idleState)
         {
-            currentRequest = request;
             currentDirectionRequests.AddFirst(request);
             SetState(movingState);
-            PrintRequests();
-            return;
         }
-
-        if (request.DesiredDirection != currentRequest.DesiredDirection)
+        else if (request.DesiredDirection != currentRequest.DesiredDirection)
         {
             var node = oppositeRequests.First;
 
-            while (node != null)
+            while (true)
             {
-                if(request.DesiredDirection == ElevatorDirection.up && request.FloorNum < node.Value.FloorNum)
+                if (node == null)
+                {
+                    oppositeRequests.AddLast(request);
+                    break;
+                }
+
+                if (request.DesiredDirection == ElevatorDirection.up && request.FloorNum < node.Value.FloorNum)
                 {
                     oppositeRequests.AddBefore(node, request);
-                    PrintRequests();
-                    return;
+                    break;
                 }
 
                 if (request.DesiredDirection == ElevatorDirection.down && request.FloorNum > node.Value.FloorNum)
                 {
                     oppositeRequests.AddBefore(node, request);
-                    PrintRequests();
-                    return;
+                    break;
                 }
 
                 node = node.Next;
             }
-
-            oppositeRequests.AddLast(request);
-            return;
         }
-
-        if (movingDirection != desiredDirection)
+        else if (movingDirection != desiredDirection)
         {
             var node = currentDirectionRequests.First;
 
-            while (node != null)
+            while (true)
             {
                 if ((desiredFloorNum - node.Value.FloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0)
                 {
                     currentDirectionRequests.AddBefore(node, request);
-                    currentRequest = currentDirectionRequests.First.Value;
-                    PrintRequests();
-                    return;
+                    break;
                 }
 
                 node = node.Next;
+
+                if (node == null)
+                {
+                    currentDirectionRequests.AddLast(request);
+                    break;
+                }
             }
-
-            currentDirectionRequests.AddLast(request);
-            PrintRequests();
-            return;
         }
-
-        if ((desiredFloorNum - CurrentFloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0)
+        else if ((desiredFloorNum - CurrentFloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0)
         {
             var node = currentDirectionRequests.First;
 
-            while (node != null)
+            while (true)
             {
                 if ((desiredFloorNum - node.Value.FloorNum) * (movingDirection == ElevatorDirection.down ? 1 : -1) > 0)
                 {
                     currentDirectionRequests.AddBefore(node, request);
-                    currentRequest = currentDirectionRequests.First.Value;
-                    PrintRequests();
-                    return;
+                    break;
                 }
 
                 node = node.Next;
-            }
 
-            currentDirectionRequests.AddLast(request);
-            PrintRequests();
-            return;
+                if (node == null)
+                {
+                    currentDirectionRequests.AddLast(request);
+                    break;
+                }
+            }
         }
+
+        currentRequest = currentDirectionRequests.First.Value;
+        PrintRequests();
     }
 
     private void PrintRequests()
