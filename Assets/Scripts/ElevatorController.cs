@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Cabin;
 using Floor;
 using UnityEngine;
@@ -46,6 +47,7 @@ public class ElevatorController : MonoBehaviour
     private LinkedList<Request> oppositeRequests = new LinkedList<Request>();
     private LinkedList<Request> delayedRequests = new LinkedList<Request>();
     private LinkedList<Request> currentRequests;
+    private Request currentRequest;
 
     private int goalFloorNum;
     private int nextFloorNum;
@@ -98,22 +100,94 @@ public class ElevatorController : MonoBehaviour
         floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, currentDirectionRequests.First.Value.DesiredDirection);
     }
 
-    public void AddRequest(int floorNum, ElevatorDirection desiredDirection)
+    private void JumpToNextRequest()
     {
-        if (currentState == idleState)
+        var node = currentDirectionRequests.First.Next;
+
+        if (node == null)
         {
-            movingDirection = GetDirectionToRequestedFloor(floorNum, CurrentFloorNum);
-            DirectionChanged.Invoke(movingDirection);
-            currentDirectionRequests.AddFirst(new Request(desiredDirection, floorNum));
+            if (oppositeRequests.Count == 0)
+            {
+                SetState(idleState);
+                return;
+            }
+
+            currentDirectionRequests = oppositeRequests;
+            oppositeRequests = delayedRequests;
+            currentRequest = currentDirectionRequests.First.Value;
+            PrintRequests();
             SetState(movingState);
             return;
         }
+
+        currentRequest = node.Value;
+        currentDirectionRequests.RemoveFirst();
+        SetState(movingState);
+        PrintRequests();
+    }
+
+    public void AddRequest(int floorNum, ElevatorDirection desiredDirection)
+    {
+        var request = new Request(desiredDirection, floorNum);
+
+        if (currentState == idleState)
+        {
+            currentRequest = request;
+            currentDirectionRequests.AddFirst(request);
+            SetState(movingState);
+            PrintRequests();
+            return;
+        }
+
+        if (movingDirection != desiredDirection)
+        {
+            if (floorNum > CurrentFloorNum)
+            {
+                var node = currentDirectionRequests.First;
+
+                while (node != null)
+                {
+                    if (node.Value.FloorNum < floorNum)
+                    {
+                        currentDirectionRequests.AddBefore(node, request);
+                        currentRequest = request;
+                        goalFloorNum = request.FloorNum;
+                        PrintRequests();
+                        return;
+                    }
+
+                    node = node.Next;
+                }
+
+                currentDirectionRequests.AddLast(request);
+                PrintRequests();
+                return;
+            }
+        }
+    }
+
+    private void PrintRequests()
+    {
+        var root = currentDirectionRequests.First;
+        var sb = new StringBuilder();
+
+        while (root != null)
+        {
+            var request = root.Value;
+            sb.Append($"{request.FloorNum}:{request.DesiredDirection},  ");
+
+            root = root.Next;
+        }
+
+        Debug.Log(sb.ToString());
     }
 
     private void OnStartMoving()
     {
-        var request = currentDirectionRequests.First;
-        goalFloorNum = request.Value.FloorNum;
+        var request = currentDirectionRequests.First.Value;
+        movingDirection = GetDirectionToRequestedFloor(request.FloorNum, CurrentFloorNum);
+        DirectionChanged.Invoke(movingDirection);
+        goalFloorNum = request.FloorNum;
         nextFloorNum = movingDirection == ElevatorDirection.up ? CurrentFloorNum + 1 : CurrentFloorNum - 1;
     }
 
@@ -171,7 +245,7 @@ public class ElevatorController : MonoBehaviour
     public void OnDoorsClosed()
     {
         Debug.Log("closed");
-        SetState(idleState); // jump to next task
+        JumpToNextRequest(); // jump to next task
     }
 
     public void DoorsUpdate()
