@@ -10,7 +10,6 @@ public class ElevatorCreator : MonoBehaviour
     [SerializeField] private float ceilWidth = 10;
     [SerializeField] private Vector2 desiredResolution = new Vector2(2880, 1800);
     [SerializeField] private SpriteRenderer wall;
-    [SerializeField] private DebugDisplay debugDisplay;
 
     private Vector3 origin;
 
@@ -80,7 +79,6 @@ public class ElevatorCreator : MonoBehaviour
             cabin.Initialize(elevatorController);
             
             elevatorController.Initialize(floors, cabin);
-            debugDisplay.elevator = elevatorController;
         }
     }
 
