@@ -24,6 +24,7 @@ public class PriorityUQueue<T> where T : IComparable<T>
     public void Remove(T item)
     {
         data.Remove(item);
+        set.Remove(item);
         Heapify(0, data.Count - 1);
     }
 
