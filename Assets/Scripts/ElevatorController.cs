@@ -146,59 +146,30 @@ public class ElevatorController : MonoBehaviour
         }
         else if (request.DesiredDirection != currentRequest.DesiredDirection)
         {
-            AddRequestToList(request, oppositeRequests, isRequestedFloorHigherThanExistentOnGoingDown);
+            AddRequestToList(request, ElevatorDirection.down, oppositeRequests);
         }
         else if (movingDirection != desiredDirection)
         {
-            AddRequestToList(request, currentDirectionRequests, isRequestedFloorHigherThanExistentOnGoingUp);
+            AddRequestToList(request, ElevatorDirection.up, currentDirectionRequests);
         }
         else if ((desiredFloorNum - CurrentFloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0)
         {
-            AddRequestToList(request, currentDirectionRequests, isRequestedFloorHigherThanExistentOnGoingDown);
+            AddRequestToList(request, ElevatorDirection.down, currentDirectionRequests);
         }
         else if (oppositeRequests.Count > 0)
         {
-            AddRequestToList(request, delayedRequests, isRequestedFloorHigherThanExistentOnGoingDown);
+            AddRequestToList(request, ElevatorDirection.down, delayedRequests);
         }
         else
         {
-            AddRequestToList(request, currentDirectionRequests, isRequestedFloorHigherThanExistentOnGoingDown);
+            AddRequestToList(request, ElevatorDirection.up, currentDirectionRequests);
         }
 
         currentRequest = currentDirectionRequests.First.Value;
         PrintRequests();
     }
 
-    private struct RequestCondition
-    {
-        public int NewRequestFloorNum { get; }
-        public int ExistRequestFloorNum { get; }
-        public ElevatorDirection Direction { get; }
-
-        public RequestCondition(int newRequestFloorNum, int existRequestFloorNum, ElevatorDirection direction)
-        {
-            NewRequestFloorNum = newRequestFloorNum;
-            ExistRequestFloorNum = existRequestFloorNum;
-            Direction = direction;
-        }
-    }
-
-    private Predicate<RequestCondition> isRequestedFloorHigherThanExistentOnGoingUp = IsRequestedFloorHigherThanExistentOnGoingUp;
-    private Predicate<RequestCondition> isRequestedFloorHigherThanExistentOnGoingDown = IsRequestedFloorHigherThanExistentOnGoingDown;
-
-    private static bool IsRequestedFloorHigherThanExistentOnGoingUp(RequestCondition condition)
-    {
-        return condition.NewRequestFloorNum > condition.ExistRequestFloorNum && condition.Direction == ElevatorDirection.up ||
-               condition.NewRequestFloorNum < condition.ExistRequestFloorNum && condition.Direction == ElevatorDirection.down;
-    }
-
-    private static bool IsRequestedFloorHigherThanExistentOnGoingDown(RequestCondition obj)
-    {
-        return obj.NewRequestFloorNum > obj.ExistRequestFloorNum && obj.Direction == ElevatorDirection.down ||
-               obj.NewRequestFloorNum < obj.ExistRequestFloorNum && obj.Direction == ElevatorDirection.up;
-    }
-
-    private void AddRequestToList(Request request, LinkedList<Request> requests, Predicate<RequestCondition> predicate)
+    private void AddRequestToList(Request request, ElevatorDirection dir, LinkedList<Request> requests)
     {
         var node = requests.First;
 
@@ -210,7 +181,7 @@ public class ElevatorController : MonoBehaviour
                 break;
             }
 
-            if (predicate(new RequestCondition(request.FloorNum, node.Value.FloorNum, movingDirection)))
+            if ((request.FloorNum - node.Value.FloorNum) * (movingDirection == dir ? 1 : -1) > 0)
             {
                 requests.AddBefore(node, request);
                 break;
