@@ -162,10 +162,28 @@ public class ElevatorController : MonoBehaviour
         }
         else
         {
-            AddRequestToList(request, ElevatorDirection.up, currentDirectionRequests);
+            var node = currentDirectionRequests.First;
+
+            while (true)
+            {
+                if (node == null)
+                {
+                    currentDirectionRequests.AddLast(request);
+                    break;
+                }
+
+                if (movingDirection == ElevatorDirection.up && request.FloorNum < CurrentFloorNum && request.FloorNum < node.Value.FloorNum && node.Value.FloorNum < CurrentFloorNum)
+                {
+                    currentDirectionRequests.AddBefore(node, request);
+                    break;
+                }
+
+                node = node.Next;
+            }
         }
 
         currentRequest = currentDirectionRequests.First.Value;
+
         PrintRequests();
     }
 
