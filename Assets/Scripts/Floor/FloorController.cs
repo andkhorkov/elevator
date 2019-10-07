@@ -6,8 +6,8 @@ namespace Floor
     {
         [SerializeField] private DoorController doorController;
         [SerializeField] private Display display;
-        [SerializeField] private Btn btnUp;
-        [SerializeField] private Btn btnDown;
+        [SerializeField] private FloorBtn btnUp;
+        [SerializeField] private FloorBtn btnDown;
 
         private ElevatorController elevator;
 
@@ -57,6 +57,16 @@ namespace Floor
         public void OnDoorsClosed()
         {
             elevator.OnDoorsClosed();
+        }
+
+        public void SwitchOffDownBtn()
+        {
+            btnDown.gameObject.SetActive(false);
+        }
+
+        public void SwitchOffUpBtn()
+        {
+            btnUp.gameObject.SetActive(false);
         }
 
         private void OnDestroy()

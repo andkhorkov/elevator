@@ -14,7 +14,7 @@ public enum ElevatorDirection
 
 public class ElevatorController : MonoBehaviour
 {
-    public struct Request : IComparable<Request>
+    public struct Request : IComparable<Request>, IEqualityComparer<Request>
     {
         public ElevatorDirection DesiredDirection { get; }
         public int FloorNum { get; }
@@ -39,10 +39,19 @@ public class ElevatorController : MonoBehaviour
 
             return 0;
         }
+
+        public bool Equals(Request x, Request y)
+        {
+            return x.FloorNum == y.FloorNum && x.DesiredDirection == y.DesiredDirection;
+        }
+
+        public int GetHashCode(Request req)
+        {
+            return req.GetHashCode();
+        }
     }
 
-    [SerializeField] private float speed = 400;
-    [SerializeField] private float doorCycleTime = 4;
+    [SerializeField] private float speed = 200;
 
     private Dictionary<int, FloorController> floors; // elevator might serve not all the floors, that's why it's a Dictionary
     private CabinController cabinController;
@@ -65,6 +74,7 @@ public class ElevatorController : MonoBehaviour
     private Request currentRequest;
     private int nextFloorNum;
 
+    public int FloorCount => floors.Count;
     public int CurrentFloorNum { get; private set; }
 
     public event Action<int> FloorChanged = delegate { };
@@ -118,13 +128,6 @@ public class ElevatorController : MonoBehaviour
 
     private void JumpToNextRequest()
     {
-        //if (currentRequests.Count == 1 && currentOppositeRequests.Count > 0 && currentOppositeRequests.Peek.FloorNum == CurrentFloorNum)
-        //{
-        //    var req = currentOppositeRequests.Dequeue();
-        //    floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, req.DesiredDirection);
-        //}
-
-
         if(currentRequests.Count > 0)
         {
             currentRequests.Dequeue();
@@ -138,8 +141,8 @@ public class ElevatorController : MonoBehaviour
 
             if (currentOppositeRequests.Count > 0 && currentOppositeRequests.Contains(symmetricRequest))
             {
-                //currentOppositeRequests.Remove(symmetricRequest);
-                //floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, symmetricRequest.DesiredDirection);
+                currentOppositeRequests.Remove(symmetricRequest);
+                floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, symmetricRequest.DesiredDirection);
             }
 
             if (currentOppositeRequests.Count > 0)
@@ -161,7 +164,6 @@ public class ElevatorController : MonoBehaviour
         currentRequest = currentRequests.Peek;
 
         SetState(movingState);
-        Print();
     }
 
     public void AddRequest(int desiredFloorNum, ElevatorDirection desiredDirection)
@@ -187,6 +189,11 @@ public class ElevatorController : MonoBehaviour
             currentRequest = currentRequests.Peek;
             SetState(movingState);
         }
+        else if (request.Equals(currentRequest))
+        {
+            floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, currentRequest.DesiredDirection);
+            return;
+        }
         else if (request.DesiredDirection != currentRequest.DesiredDirection)
         {
             Debug.Log(1);
@@ -209,12 +216,11 @@ public class ElevatorController : MonoBehaviour
         }
         else
         {
-            Debug.Log("not covered");
+            Debug.Log($"CurrentFloorNum: {CurrentFloorNum}, movingDirection: {movingDirection}, requestedFloor: {request.FloorNum}, requestedDir: {request.DesiredDirection}, currentRequest: {currentRequest.FloorNum}-{currentRequest.DesiredDirection}");
             currentRequests.Enqueue(request);
         }
 
         currentRequest = currentRequests.Peek;
-        Print();
 
         #region MyRegion
 
@@ -260,57 +266,6 @@ public class ElevatorController : MonoBehaviour
 
         #endregion
 
-    }
-
-    private void Print()
-    {
-        return;
-        var list = new List<Request>();
-        var sb = new StringBuilder();
-
-        sb.Append(" вверх:\t");
-
-        while (upRequests.Count > 0)
-        {
-            var request = upRequests.Dequeue();
-            list.Add(request);
-            sb.Append($"{request.FloorNum} : {request.DesiredDirection}, ");
-        }
-
-        for (int i = 0; i < list.Count; i++)
-        {
-            upRequests.Enqueue(list[i]);
-        }
-
-        sb.Append("\n вниз:\t");
-
-        while (downRequests.Count > 0)
-        {
-            var request = downRequests.Dequeue();
-            list.Add(request);
-            sb.Append($"{request.FloorNum} : {request.DesiredDirection}, ");
-        }
-
-        for (int i = 0; i < list.Count; i++)
-        {
-            downRequests.Enqueue(list[i]);
-        }
-
-        sb.Append("\n отложенные:\t");
-
-        while (currentDelayedRequests.Count > 0)
-        {
-            var request = currentDelayedRequests.Dequeue();
-            list.Add(request);
-            sb.Append($"{request.FloorNum} : {request.DesiredDirection}, ");
-        }
-
-        Debug.Log(sb.ToString());
-
-        for (int i = 0; i < list.Count; i++)
-        {
-            currentDelayedRequests.Enqueue(list[i]);
-        }
     }
 
     private void OnStartMoving()

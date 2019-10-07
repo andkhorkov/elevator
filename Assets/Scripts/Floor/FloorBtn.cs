@@ -2,7 +2,7 @@
 
 namespace Floor
 {
-    public class Btn : MonoBehaviour, IClickable
+    public class FloorBtn : MonoBehaviour, IClickable
     {
         [SerializeField] private FloorController floor;
         [SerializeField] private ElevatorDirection direction;
@@ -18,8 +18,8 @@ namespace Floor
 
         public void OnClick()
         {
-            floor.OnButtonClicked(direction);
             sprBtn.SprRenderer.color = Color.red;
+            floor.OnButtonClicked(direction);
         }
 
         public void OnGoalFloorReached(ElevatorDirection direction)

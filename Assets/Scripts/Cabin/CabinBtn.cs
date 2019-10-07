@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace Cabin
 {
-    public class Btn : MonoBehaviour, IPointerClickHandler
+    public class CabinBtn : MonoBehaviour, IPointerClickHandler
     {
         [SerializeField] private CabinController cabin;
         [SerializeField] private int floorNum;
