@@ -43,12 +43,20 @@ public class ElevatorController : MonoBehaviour
     private State goingDownState;
     private State doorsCycleState;
 
-    private LinkedList<Request> currentDirectionRequests = new LinkedList<Request>();
+    private LinkedList<Request> alongCabinDirectionRequests = new LinkedList<Request>();
     private LinkedList<Request> oppositeRequests = new LinkedList<Request>();
     private LinkedList<Request> delayedRequests = new LinkedList<Request>();
+    private LinkedList<Request> currentRequests;
     private Request currentRequest;
 
     private int nextFloorNum;
+
+
+    public LinkedList<Request> AlongCabinDirectionRequests => alongCabinDirectionRequests;
+    public LinkedList<Request> OppositeRequests => oppositeRequests;
+    public LinkedList<Request> DelayedRequests => delayedRequests;
+    public LinkedList<Request> CurrentRequests => currentRequests;
+
 
     public int CurrentFloorNum { get; private set; }
 
@@ -74,6 +82,7 @@ public class ElevatorController : MonoBehaviour
         SetState(idleState);
         FloorChanged.Invoke(CurrentFloorNum);
         floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, ElevatorDirection.none);
+        currentRequests = alongCabinDirectionRequests;
     }
 
     private void Update()
@@ -95,42 +104,44 @@ public class ElevatorController : MonoBehaviour
     private void OnReachGoalFloor()
     {
         SetState(doorsCycleState);
-        floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, currentDirectionRequests.First.Value.DesiredDirection);
+        floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, currentRequests.First.Value.DesiredDirection);
     }
 
     private void JumpToNextRequest()
     {
-        if (currentDirectionRequests.Count == 1 && oppositeRequests.Count > 0 && oppositeRequests.First.Value.FloorNum == CurrentFloorNum)
+        if (alongCabinDirectionRequests.Count == 1 && oppositeRequests.Count > 0 && oppositeRequests.First.Value.FloorNum == CurrentFloorNum)
         {
             floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, oppositeRequests.First.Value.DesiredDirection);
             oppositeRequests.RemoveFirst();
         }
 
-        if (currentDirectionRequests.Count == 0)
+        if (currentRequests.Count == 0)
         {
             SetState(idleState);
             return;
         }
 
-        var node = currentDirectionRequests.First.Next;
-        currentDirectionRequests.RemoveFirst();
+        currentRequests.RemoveFirst();
 
-        if (node == null)
+        if (currentRequests.Count == 0)
         {
-            if (oppositeRequests.Count == 0)
+            if (oppositeRequests.Count > 0)
             {
-                SetState(idleState);
-                PrintRequests();
-                return;
+                currentRequests = oppositeRequests;
             }
-
-            currentDirectionRequests = oppositeRequests;
-
-            oppositeRequests = delayedRequests;
-            SetState(movingState);
+            else if (delayedRequests.Count > 0)
+            {
+                currentRequests = delayedRequests;
+            }
         }
 
-        currentRequest = currentDirectionRequests.First.Value;
+        if (currentRequests.Count == 0)
+        {
+            SetState(idleState);
+            return;
+        }
+
+        currentRequest = currentRequests.First.Value;
         SetState(movingState);
         PrintRequests();
     }
@@ -141,7 +152,7 @@ public class ElevatorController : MonoBehaviour
 
         if (currentState == idleState)
         {
-            currentDirectionRequests.AddFirst(request);
+            alongCabinDirectionRequests.AddFirst(request);
             SetState(movingState);
         }
         else if (request.DesiredDirection != currentRequest.DesiredDirection)
@@ -150,11 +161,11 @@ public class ElevatorController : MonoBehaviour
         }
         else if (movingDirection != desiredDirection)
         {
-            AddRequestToList(request, ElevatorDirection.up, currentDirectionRequests);
+            AddRequestToList(request, ElevatorDirection.up, alongCabinDirectionRequests);
         }
         else if ((desiredFloorNum - CurrentFloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0)
         {
-            AddRequestToList(request, ElevatorDirection.down, currentDirectionRequests);
+            AddRequestToList(request, ElevatorDirection.down, alongCabinDirectionRequests);
         }
         else if (oppositeRequests.Count > 0)
         {
@@ -162,19 +173,19 @@ public class ElevatorController : MonoBehaviour
         }
         else
         {
-            var node = currentDirectionRequests.First;
+            var node = alongCabinDirectionRequests.First;
 
             while (true)
             {
                 if (node == null)
                 {
-                    currentDirectionRequests.AddLast(request);
+                    alongCabinDirectionRequests.AddLast(request);
                     break;
                 }
 
                 if (movingDirection == ElevatorDirection.up && request.FloorNum < CurrentFloorNum && request.FloorNum < node.Value.FloorNum && node.Value.FloorNum < CurrentFloorNum)
                 {
-                    currentDirectionRequests.AddBefore(node, request);
+                    alongCabinDirectionRequests.AddBefore(node, request);
                     break;
                 }
 
@@ -182,7 +193,7 @@ public class ElevatorController : MonoBehaviour
             }
         }
 
-        currentRequest = currentDirectionRequests.First.Value;
+        currentRequest = alongCabinDirectionRequests.First.Value;
 
         PrintRequests();
     }
@@ -211,7 +222,7 @@ public class ElevatorController : MonoBehaviour
 
     private void PrintRequests()
     {
-        var root = currentDirectionRequests.First;
+        var root = alongCabinDirectionRequests.First;
         var sb = new StringBuilder();
 
         sb.Append("current:\n");
@@ -251,7 +262,7 @@ public class ElevatorController : MonoBehaviour
 
     private void OnStartMoving()
     {
-        var request = currentDirectionRequests.First.Value;
+        var request = currentRequests.First.Value;
         movingDirection = GetDirectionToRequestedFloor(request.FloorNum, CurrentFloorNum);
         DirectionChanged.Invoke(movingDirection);
         nextFloorNum = movingDirection == ElevatorDirection.up ? CurrentFloorNum + 1 : CurrentFloorNum - 1;
@@ -325,6 +336,8 @@ public class ElevatorController : MonoBehaviour
     public void OnEnteredIdle()
     {
         EnteredIdle.Invoke();
+        currentRequests = alongCabinDirectionRequests;
+        PrintRequests();
     }
 
     public abstract class State
