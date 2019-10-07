@@ -169,7 +169,7 @@ public class ElevatorController : MonoBehaviour
 
     public void AddRequest(int desiredFloorNum, ElevatorDirection desiredDirection)
     {
-        if (desiredDirection == ElevatorDirection.none)
+        if (desiredDirection == ElevatorDirection.none) // cabin btn
         {
             desiredDirection = GetDirectionToRequestedFloor(desiredFloorNum);
         }
@@ -202,22 +202,18 @@ public class ElevatorController : MonoBehaviour
         }
         else if (request.DesiredDirection != currentRequest.DesiredDirection)
         {
-            Debug.Log(1);
             currentOppositeRequests.Enqueue(request);
         }
         else if (movingDirection != desiredDirection)
         {
-            Debug.Log(2);
             currentRequests.Enqueue(request);
         }
         else if ((desiredFloorNum - CurrentFloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0)
         {
-            Debug.Log(3);
             currentRequests.Enqueue(request);
         }
         else if (currentOppositeRequests.Count > 0)
         {
-            Debug.Log(4);
             currentDelayedRequests.Enqueue(request);
         }
         else
