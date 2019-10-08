@@ -194,7 +194,7 @@ namespace Tests
         }
 
         [UnityTest]
-        public IEnumerator Elevator_1TaskUpFirstThen1TaskDownSameFloor_NotAllowed()
+        public IEnumerator Elevator_1TaskUpFirstThen1TaskDownSameFloor_TwoEventsSameDoorCycle()
         {
             SetElevator();
 
@@ -208,7 +208,7 @@ namespace Tests
         }
 
         [UnityTest]
-        public IEnumerator Elevator_1TaskUpFirstThen1TaskDownSameFloorThen1TaskUp_NotAllowed()
+        public IEnumerator Elevator_1TaskUpFirstThen1TaskDownSameFloorThen1TaskUp_TwoEventsSameDoorCycleThenGoUp()
         {
             SetElevator();
 
@@ -221,6 +221,26 @@ namespace Tests
             yield return AwaitUntilNumberOfOpproachedFloorsIs(3);
 
             Assert.AreEqual(new List<int>() { 3, 3, 4 }, opproachedFloors);
+        }
+
+        [UnityTest]
+        public IEnumerator Elevator_1TaskUpFirstThen1TaskDownSameFloorThen1TaskUp_NotAllowed()
+        {
+            SetElevator();
+
+            elevator.Floors[6].BtnDown.OnClick();
+            yield return AwaitUntilElevatorReachFloor(6);
+            elevator.Floors[1].BtnUp.OnClick();
+            yield return new WaitForSeconds(1);
+            elevator.Floors[3].BtnUp.OnClick();
+            yield return new WaitForSeconds(1);
+            elevator.Floors[5].BtnUp.OnClick();
+            yield return new WaitForSeconds(1);
+            elevator.Floors[2].BtnUp.OnClick();
+
+            yield return AwaitUntilNumberOfOpproachedFloorsIs(3);
+
+            Assert.AreEqual(new List<int>() { 6, 1, 2, 3, 5 }, opproachedFloors);
         }
     }
 }

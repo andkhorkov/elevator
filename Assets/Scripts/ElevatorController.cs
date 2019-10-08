@@ -209,6 +209,7 @@ public class ElevatorController : MonoBehaviour
         else if (currentState == doorsCycleState)
         {
             tempBufferRequests.Enqueue(request);
+
             Debug.Log(6);
             return;
         }
