@@ -1194,7 +1194,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   doorController: {fileID: 3300265292895250299}
-  display: {fileID: 7098985089288026324}
+  floorDisplay: {fileID: 7098985089288026324}
   btnUp: {fileID: 286003819212346004}
   btnDown: {fileID: 5264539118962424858}
 --- !u!1 &6639645678596808017

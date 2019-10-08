@@ -4,7 +4,7 @@ namespace Cabin
 {
     public class CabinController : MonoBehaviour
     {
-        [SerializeField] private Display display;
+        [SerializeField] private CabinDisplay cabinDisplay;
         [SerializeField] private CanvasGroup cg;
         [SerializeField] private float fadeInTime = 0.25f;
 
@@ -37,7 +37,7 @@ namespace Cabin
 
         private void OnFloorChanged(int floorNum)
         {
-            display.OnFloorChanged(floorNum);
+            cabinDisplay.OnFloorChanged(floorNum);
         }
 
         private void Update()

@@ -5,11 +5,14 @@ namespace Floor
     public class FloorController : MonoBehaviour
     {
         [SerializeField] private DoorController doorController;
-        [SerializeField] private Display display;
+        [SerializeField] private FloorDisplay floorDisplay;
         [SerializeField] private FloorBtn btnUp;
         [SerializeField] private FloorBtn btnDown;
 
         private ElevatorController elevator;
+
+        public FloorBtn BtnUp => btnUp;
+        public FloorBtn BtnDown => btnDown;
 
         public DoorController DoorController => doorController;
 
@@ -26,21 +29,24 @@ namespace Floor
             elevator.FloorChanged += OnFloorChanged;
             elevator.EnteredIdle += OnEnteredIdle;
             elevator.DirectionChanged += OnDirectionChanged;
+            elevator.GoalFloorReached += OnGoalFloorReached;
+        }
+
+        private void OnDestroy()
+        {
+            elevator.FloorChanged -= OnFloorChanged;
+            elevator.EnteredIdle -= OnEnteredIdle;
+            elevator.DirectionChanged -= OnDirectionChanged;
+            elevator.GoalFloorReached -= OnGoalFloorReached;
         }
 
         public void OnDirectionChanged(ElevatorDirection direction)
         {
-            display.OnDirectionChanged(direction);
+            floorDisplay.OnDirectionChanged(direction);
         }
 
         public void OpenDoors()
         {
-            if (Num != elevator.CurrentFloorNum)
-            {
-                Debug.LogWarning("trying to kill people");
-                return;
-            }
-
             doorController.Open();
         }
 
@@ -69,13 +75,6 @@ namespace Floor
             btnUp.gameObject.SetActive(false);
         }
 
-        private void OnDestroy()
-        {
-            elevator.FloorChanged -= OnFloorChanged;
-            elevator.EnteredIdle -= OnEnteredIdle;
-            elevator.DirectionChanged -= OnDirectionChanged;
-        }
-
         public void OnButtonClicked(ElevatorDirection direction)
         {
             elevator.AddRequest(Num, direction);
@@ -83,12 +82,12 @@ namespace Floor
 
         private void OnFloorChanged(int floorNum)
         {
-            display.OnFloorChanged(floorNum);
+            floorDisplay.OnFloorChanged(floorNum);
         }
 
         private void OnEnteredIdle()
         {
-            display.OnEnteredIdle();
+            floorDisplay.OnEnteredIdle();
         }
 
         public void OnGoalFloorReached(int floorNum, ElevatorDirection direction)
@@ -97,8 +96,8 @@ namespace Floor
             {
                 return;
             }
-
-            display.OnGoalFloorReached();
+            
+            floorDisplay.OnGoalFloorReached();
             btnUp.OnGoalFloorReached(direction);
             btnDown.OnGoalFloorReached(direction);
         }

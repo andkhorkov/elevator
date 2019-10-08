@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class ElevatorCreator : MonoBehaviour
 {
+    [SerializeField] private int elevatorSpeed = 400;
     [SerializeField] private int numFloors = 6;
     [SerializeField] private int numElevators = 1;
     [SerializeField] private float ceilToDoorOffset = 10;
@@ -11,27 +12,24 @@ public class ElevatorCreator : MonoBehaviour
     [SerializeField] private Vector2 desiredResolution = new Vector2(2880, 1800);
     [SerializeField] private SpriteRenderer wall;
 
-    private Vector3 origin;
-
     public static event Action<ElevatorController> ElevatorInitialized = delegate {  };
 
     private void Start()
     {
         SetCameraSize();
 
-        var floorPositions = BuildFloors();
-        BuildElevators(floorPositions);
+        var origin = Camera.main.ScreenToWorldPoint(Vector3.zero);
+        origin.z = 0;
+        var floorPositions = BuildFloors(origin);
+        BuildElevators(floorPositions, origin);
     }
 
-    private Vector3[] BuildFloors()
+    private Vector3[] BuildFloors(Vector3 origin)
     {
         var ceiling = Resources.Load<SpriteRenderer>("ceiling");
         var floorPrefab = Resources.Load<Floor.FloorController>("floorController");
         var doorSize = floorPrefab.DoorController.DoorSize;
         var floorPositions = new Vector3[numFloors + 1];
-
-        origin = Camera.main.ScreenToWorldPoint(Vector3.zero);
-        origin.z = 0;
         var offset = desiredResolution.x * 0.5f * Vector3.right;
         var ceilSize = new Vector2(desiredResolution.x, ceilWidth);
         var firstFloorPos = origin + offset;
@@ -48,7 +46,7 @@ public class ElevatorCreator : MonoBehaviour
         return floorPositions;
     }
 
-    private void BuildElevators(Vector3[] floorPositions)
+    private void BuildElevators(Vector3[] floorPositions, Vector3 origin)
     {
         var floorControllerPrefab = Resources.Load<Floor.FloorController>("floorController");
         var cabinPrefab = Resources.Load<Cabin.CabinController>("elevatorCabin");
@@ -81,7 +79,7 @@ public class ElevatorCreator : MonoBehaviour
             cabin.name = $"cabin{i + 1}";
             cabin.Initialize(elevatorController);
             
-            elevatorController.Initialize(floors, cabin);
+            elevatorController.Initialize(floors, cabin, elevatorSpeed);
         }
     }
 
