@@ -262,7 +262,7 @@ public class ElevatorController : MonoBehaviour
 
     public void MoveCabin()
     {
-        if (CurrentFloorNum == currentRequest.FloorNum)
+        if (CurrentFloorNum == currentRequest.FloorNum && cabin.position == Floors[CurrentFloorNum].Position)
         {
             OnReachGoalFloor();
             return;

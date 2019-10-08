@@ -23,7 +23,7 @@ namespace Tests
             };
 
             cam.AddComponent<Camera>();
-            world = Object.Instantiate(Resources.Load<GameObject>("Canvas"));
+            world = Object.Instantiate(Resources.Load<GameObject>("world"));
             Time.timeScale = 100;
         }
 
