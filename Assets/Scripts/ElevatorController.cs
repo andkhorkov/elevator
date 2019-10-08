@@ -51,12 +51,10 @@ public class ElevatorController : MonoBehaviour
         }
     }
 
-    [SerializeField] private float speed = 200;
-
-    private Dictionary<int, FloorController> floors; // elevator might serve not all the floors, that's why it's a Dictionary
     private CabinController cabinController;
     private Transform cabin;
     private float currentDoorCycleTime;
+    private float speed;
     private ElevatorDirection movingDirection;
 
     private State currentState;
@@ -71,10 +69,12 @@ public class ElevatorController : MonoBehaviour
     private PriorityUQueue<Request> currentRequests;
     private PriorityUQueue<Request> currentOppositeRequests;
     private PriorityUQueue<Request> currentDelayedRequests;
+    //when doors are closing we dequeuing current pq, but we don't want to dequeue the task that become first while current task is not removed yet. Some other task might want to go to the peak of the heap.
+    private Queue<Request> tempBufferRequests = new Queue<Request>();  
     private Request currentRequest;
     private int nextFloorNum;
 
-    public int FloorCount => floors.Count;
+    public Dictionary<int, FloorController> Floors { get; private set; } // elevator might serve not all the floors, that's why it's a Dictionary
     public int CurrentFloorNum { get; private set; }
 
     public event Action<int> FloorChanged = delegate { };
@@ -83,9 +83,12 @@ public class ElevatorController : MonoBehaviour
 
     public event Action<ElevatorDirection> DirectionChanged = delegate { };
 
-    public void Initialize(Dictionary<int, FloorController> floors, CabinController cabinController)
+    public event Action<int, ElevatorDirection> GoalFloorReached = delegate { };
+
+    public void Initialize(Dictionary<int, FloorController> floors, CabinController cabinController, float speed)
     {
-        this.floors = floors;
+        this.speed = speed;
+        Floors = floors;
         this.cabinController = cabinController;
         cabin = cabinController.transform;
         CurrentFloorNum = 1;
@@ -96,7 +99,7 @@ public class ElevatorController : MonoBehaviour
 
         SetState(idleState);
         FloorChanged.Invoke(CurrentFloorNum);
-        floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, ElevatorDirection.none);
+        GoalFloorReached.Invoke(CurrentFloorNum, ElevatorDirection.none);
         cabinController.ShowCabin(false);
     }
 
@@ -124,7 +127,7 @@ public class ElevatorController : MonoBehaviour
     private void OnReachGoalFloor()
     {
         SetState(doorsCycleState);
-        floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, currentRequest.DesiredDirection);
+        GoalFloorReached.Invoke(CurrentFloorNum, currentRequest.DesiredDirection);
     }
 
     private void JumpToNextRequest()
@@ -132,6 +135,12 @@ public class ElevatorController : MonoBehaviour
         if(currentRequests.Count > 0)
         {
             currentRequests.Dequeue();
+        }
+
+        while (tempBufferRequests.Count > 0)
+        {
+            var request = tempBufferRequests.Dequeue();
+            currentRequests.Enqueue(request);
         }
 
         if(currentRequests.Count == 0)
@@ -143,7 +152,7 @@ public class ElevatorController : MonoBehaviour
             if (currentOppositeRequests.Count > 0 && currentOppositeRequests.Contains(symmetricRequest))
             {
                 currentOppositeRequests.Remove(symmetricRequest);
-                floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, symmetricRequest.DesiredDirection);
+                GoalFloorReached.Invoke(CurrentFloorNum, symmetricRequest.DesiredDirection);
             }
 
             if (currentOppositeRequests.Count > 0)
@@ -194,27 +203,40 @@ public class ElevatorController : MonoBehaviour
             currentRequests.Enqueue(request);
             currentRequest = currentRequests.Peek;
             SetState(movingState);
+
+            Debug.Log(0);
+        }
+        else if (currentState == doorsCycleState)
+        {
+            tempBufferRequests.Enqueue(request);
+            Debug.Log(6);
+            return;
         }
         else if (request.Equals(currentRequest))
         {
-            floors[CurrentFloorNum].OnGoalFloorReached(CurrentFloorNum, currentRequest.DesiredDirection);
+            GoalFloorReached.Invoke(CurrentFloorNum, currentRequest.DesiredDirection);
+            Debug.Log(1);
             return;
         }
         else if (request.DesiredDirection != currentRequest.DesiredDirection)
         {
             currentOppositeRequests.Enqueue(request);
+            Debug.Log(2);
         }
         else if (movingDirection != desiredDirection)
         {
             currentRequests.Enqueue(request);
+            Debug.Log(3);
         }
         else if ((desiredFloorNum - CurrentFloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0)
         {
             currentRequests.Enqueue(request);
+            Debug.Log(4);
         }
         else if (currentOppositeRequests.Count > 0)
         {
             currentDelayedRequests.Enqueue(request);
+            Debug.Log(5);
         }
         else
         {
@@ -245,7 +267,7 @@ public class ElevatorController : MonoBehaviour
             return;
         }
 
-        if (cabin.position == floors[nextFloorNum].Position)
+        if (cabin.position == Floors[nextFloorNum].Position)
         {
             CurrentFloorNum = nextFloorNum;
             FloorChanged.Invoke(CurrentFloorNum);
@@ -262,29 +284,29 @@ public class ElevatorController : MonoBehaviour
                     --nextFloorNum;
                 }
 
-                if (nextFloorNum <= 0 || nextFloorNum > floors.Count)
+                if (nextFloorNum <= 0 || nextFloorNum > Floors.Count)
                 {
                     return;
                 }
             }
-            while (!floors.ContainsKey(nextFloorNum));
+            while (!Floors.ContainsKey(nextFloorNum));
 
             return;
         }
 
         cabin.position = Vector3.MoveTowards(cabin.transform.position,
-            floors[nextFloorNum].Position, speed * Time.deltaTime);
+            Floors[nextFloorNum].Position, speed * Time.deltaTime);
     }
 
     public void OpenDoors()
     {
-        floors[CurrentFloorNum].OpenDoors();
+        Floors[CurrentFloorNum].OpenDoors();
         cabinController.ShowCabin(true);
     }
 
     public void CloseDoors()
     {
-        floors[CurrentFloorNum].CloseDoors();
+        Floors[CurrentFloorNum].CloseDoors();
     }
 
     public void OnDoorsClosed()
@@ -295,7 +317,7 @@ public class ElevatorController : MonoBehaviour
 
     public void DoorsUpdate()
     {
-        floors[CurrentFloorNum].DoorsUpdate();
+        Floors[CurrentFloorNum].DoorsUpdate();
     }
 
     public void OnEnteredIdle()

@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace Floor
 {
-    public class Display : MonoBehaviour
+    public class FloorDisplay : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI lblCurrentFloor;
         [SerializeField] private Image sprDirection;

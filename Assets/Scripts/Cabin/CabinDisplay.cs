@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Cabin
 {
-    public class Display : MonoBehaviour
+    public class CabinDisplay : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI lblCurrentFloor;
 
