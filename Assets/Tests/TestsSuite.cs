@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -12,7 +12,7 @@ namespace Tests
     {
         private GameObject world;
         private ElevatorController elevator;
-        List<int> opproachedFloors = new List<int>();
+        private List<int> visitedFloors = new List<int>();
 
         [SetUp]
         public void Setup()
@@ -29,7 +29,7 @@ namespace Tests
 
         private void OnElevatorReachGoalFloor(int floorNum, ElevatorDirection direction)
         {
-            opproachedFloors.Add(floorNum);
+            visitedFloors.Add(floorNum);
         }
 
         private void SetElevator()
@@ -43,7 +43,7 @@ namespace Tests
         {
             Object.Destroy(world.gameObject);
             Time.timeScale = 1;
-            opproachedFloors.Clear();
+            visitedFloors.Clear();
         }
 
         [UnityTest]
@@ -53,22 +53,6 @@ namespace Tests
             Assert.IsNotNull(world);
         }
 
-        private IEnumerator AwaitUntilElevatorReachFloor(int floorNum)
-        {
-            while (elevator.CurrentFloorNum != floorNum)
-            {
-                yield return null;
-            }
-        }
-
-        private IEnumerator AwaitUntilNumberOfOpproachedFloorsIs(int num)
-        {
-            while (opproachedFloors.Count != num)
-            {
-                yield return null;
-            }
-        }
-
         [UnityTest]
         public IEnumerator Elevator_GoingUpCurrentTaskDownRequestedDown_HigherEarlier()
         {
@@ -76,17 +60,18 @@ namespace Tests
 
             elevator.Floors[6].BtnDown.OnClick();
             yield return null;
-            yield return AwaitUntilElevatorReachFloor(2);
+            yield return new AwaitUntilElevatorReachFloor(2, elevator);
             elevator.Floors[4].BtnDown.OnClick();
-            yield return AwaitUntilElevatorReachFloor(4);
+            yield return new AwaitUntilElevatorReachFloor(4, elevator);
             elevator.Floors[3].BtnDown.OnClick();
             yield return new WaitForSeconds(2);
             elevator.Floors[2].BtnDown.OnClick();
             yield return null;
 
-            yield return AwaitUntilNumberOfOpproachedFloorsIs(4);
+            yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
 
-            Assert.AreEqual(new List<int>() { 6, 4, 3, 2 }, opproachedFloors);
+            Print();
+            Assert.AreEqual(new List<int>() { 6, 4, 3, 2 }, visitedFloors);
         }
 
         [UnityTest]
@@ -99,14 +84,13 @@ namespace Tests
             elevator.Floors[5].BtnUp.OnClick();
             yield return null;
             elevator.Floors[3].BtnDown.OnClick();
-            yield return AwaitUntilElevatorReachFloor(2);
+            yield return new AwaitUntilElevatorReachFloor(2, elevator);
             elevator.Floors[1].BtnUp.OnClick();
 
-            yield return null;
+            yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
 
-            yield return AwaitUntilNumberOfOpproachedFloorsIs(4);
-
-            Assert.AreEqual(new List<int>() { 5,6,3,1 }, opproachedFloors);
+            Print();
+            Assert.AreEqual(new List<int>() { 5,6,3,1 }, visitedFloors);
         }
 
         [UnityTest]
@@ -122,11 +106,10 @@ namespace Tests
             yield return new WaitForSeconds(0.2f);
             elevator.Floors[3].BtnUp.OnClick();
 
-            yield return null;
+            yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
 
-            yield return AwaitUntilNumberOfOpproachedFloorsIs(4);
-
-            Assert.AreEqual(new List<int>() { 6, 5, 3, 4 }, opproachedFloors);
+            Print();
+            Assert.AreEqual(new List<int>() { 6, 5, 3, 4 }, visitedFloors);
         }
 
         [UnityTest]
@@ -142,11 +125,10 @@ namespace Tests
             yield return new WaitForSeconds(0.2f);
             elevator.Floors[6].BtnDown.OnClick();
 
-            yield return null;
+            yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
 
-            yield return AwaitUntilNumberOfOpproachedFloorsIs(4);
-
-            Assert.AreEqual(new List<int>() { 3, 5, 6, 4 }, opproachedFloors);
+            Print();
+            Assert.AreEqual(new List<int>() { 3, 5, 6, 4 }, visitedFloors);
         }
 
         [UnityTest]
@@ -164,11 +146,10 @@ namespace Tests
             yield return new WaitForSeconds(0.4f);
             elevator.Floors[2].BtnUp.OnClick();
 
-            yield return null;
+            yield return new AwaitUntilNumberOfApproachedFloorsIs(5, visitedFloors);
 
-            yield return AwaitUntilNumberOfOpproachedFloorsIs(5);
-
-            Assert.AreEqual(new List<int>() { 6, 4, 3, 1, 2 }, opproachedFloors);
+            Print();
+            Assert.AreEqual(new List<int>() { 6, 4, 3, 1, 2 }, visitedFloors);
         }
 
         [UnityTest]
@@ -186,11 +167,10 @@ namespace Tests
             yield return new WaitForSeconds(0.4f);
             elevator.Floors[1].BtnUp.OnClick();
 
-            yield return null;
+            yield return new AwaitUntilNumberOfApproachedFloorsIs(3, visitedFloors);
 
-            yield return AwaitUntilNumberOfOpproachedFloorsIs(3);
-
-            Assert.AreEqual(new List<int>() { 4, 3, 1 }, opproachedFloors);
+            Print();
+            Assert.AreEqual(new List<int>() { 4, 3, 1 }, visitedFloors);
         }
 
         [UnityTest]
@@ -202,9 +182,10 @@ namespace Tests
             yield return new WaitForSeconds(2);
             elevator.Floors[3].BtnUp.OnClick();
 
-            yield return AwaitUntilNumberOfOpproachedFloorsIs(2); // two events: first on arrive, second when doors closed and nobody requested with direction aligned with first request
+            yield return new AwaitUntilNumberOfApproachedFloorsIs(2, visitedFloors); // two events: first on arrive, second when doors closed and nobody requested with direction aligned with first request
 
-            Assert.AreEqual(new List<int>() { 3, 3 }, opproachedFloors);
+            Print();
+            Assert.AreEqual(new List<int>() { 3, 3 }, visitedFloors);
         }
 
         [UnityTest]
@@ -218,18 +199,19 @@ namespace Tests
             yield return new WaitForSeconds(1);
             elevator.Floors[4].BtnUp.OnClick();
 
-            yield return AwaitUntilNumberOfOpproachedFloorsIs(3);
+            yield return new AwaitUntilNumberOfApproachedFloorsIs(3, visitedFloors);
 
-            Assert.AreEqual(new List<int>() { 3, 3, 4 }, opproachedFloors);
+            Print();
+            Assert.AreEqual(new List<int>() { 3, 3, 4 }, visitedFloors);
         }
 
         [UnityTest]
-        public IEnumerator Elevator_1TaskUpFirstThen1TaskDownSameFloorThen1TaskUp_NotAllowed()
+        public IEnumerator Elevator_OneTaskDownFirstThenOtherTasksUp_DownTaskFirstThenUpInAcending()
         {
             SetElevator();
 
             elevator.Floors[6].BtnDown.OnClick();
-            yield return AwaitUntilElevatorReachFloor(6);
+            yield return new AwaitUntilElevatorReachFloor(6, elevator);
             elevator.Floors[1].BtnUp.OnClick();
             yield return new WaitForSeconds(1);
             elevator.Floors[3].BtnUp.OnClick();
@@ -238,9 +220,70 @@ namespace Tests
             yield return new WaitForSeconds(1);
             elevator.Floors[2].BtnUp.OnClick();
 
-            yield return AwaitUntilNumberOfOpproachedFloorsIs(3);
+            yield return new AwaitUntilNumberOfApproachedFloorsIs(5, visitedFloors);
 
-            Assert.AreEqual(new List<int>() { 6, 1, 2, 3, 5 }, opproachedFloors);
+            Print();
+            Assert.AreEqual(new List<int>() { 6, 1, 2, 3, 5 }, visitedFloors);
         }
+
+        [UnityTest]
+        public IEnumerator Elevator_RequestingDownWhileDoorsAreClosingTheSameFloor_()
+        {
+            SetElevator();
+
+            elevator.Floors[5].BtnDown.OnClick();
+            yield return new AwaitUntilElevatorReachFloor(5, elevator);
+            elevator.Floors[4].BtnUp.OnClick();
+            yield return new AwaitUntilElevatorReachFloor(4, elevator);
+            yield return new WaitForSeconds(0.5f);
+            elevator.Floors[4].BtnDown.OnClick();
+            yield return new WaitForSeconds(1);
+            elevator.Floors[3].BtnDown.OnClick();
+
+            yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
+
+            Print();
+            Assert.AreEqual(new List<int>() { 5, 4, 4, 3 }, visitedFloors);
+        }
+
+        private void Print()
+        {
+            var s = new StringBuilder();
+
+            foreach (var floor in visitedFloors)
+            {
+                s.Append($"{floor}, ");
+            }
+
+            Debug.Log(s.ToString());
+        }
+    }
+
+    public class AwaitUntilElevatorReachFloor : CustomYieldInstruction
+    {
+        private int requiredFloorNum;
+        private ElevatorController elevator;
+
+        public AwaitUntilElevatorReachFloor(int requiredFloorNum, ElevatorController elevator)
+        {
+            this.requiredFloorNum = requiredFloorNum;
+            this.elevator = elevator;
+        }
+
+        public override bool keepWaiting => elevator.CurrFloorNum != requiredFloorNum;
+    }
+
+    public class AwaitUntilNumberOfApproachedFloorsIs : CustomYieldInstruction
+    {
+        private int requiredNumOfVisitedFloors;
+        private List<int> visitedFloors;
+
+        public AwaitUntilNumberOfApproachedFloorsIs(int requiredNumOfVisitedFloors, List<int> visitedFloors)
+        {
+            this.requiredNumOfVisitedFloors = requiredNumOfVisitedFloors;
+            this.visitedFloors = visitedFloors;
+        }
+
+        public override bool keepWaiting => visitedFloors.Count != requiredNumOfVisitedFloors;
     }
 }

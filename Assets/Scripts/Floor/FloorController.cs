@@ -47,12 +47,6 @@ namespace Floor
 
         public void OpenDoors()
         {
-            if (Num != elevator.CurrentFloorNum)
-            {
-                Debug.LogWarning("trying to kill people");
-                return;
-            }
-
             doorController.Open();
         }
 

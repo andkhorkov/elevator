@@ -404,5 +404,10 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 519420031}
+    - target: {fileID: 1601534498914521271, guid: 101d5a956dbf5ef43af522b8fc9087c6,
+        type: 3}
+      propertyPath: elevatorSpeed
+      value: 300
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 101d5a956dbf5ef43af522b8fc9087c6, type: 3}
