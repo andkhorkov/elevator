@@ -87,7 +87,7 @@ public class ElevatorController : MonoBehaviour
 
     public event Action<ElevatorDirection> DirectionChanged = delegate { };
 
-    public static event Action<int, ElevatorDirection> GoalFloorReached = delegate { };
+    public static event Action<int, ElevatorDirection> GoalFloorReached = delegate { }; // it's better to refactor in such way that each floor has all the doors in it, then we wouldn't need this broadcasting event, that every FloorController receives.
 
     public void Initialize(Dictionary<int, FloorController> floors, CabinController cabinController, float speed)
     {
@@ -137,7 +137,7 @@ public class ElevatorController : MonoBehaviour
     {
         SetState(doorsCycleState);
         GoalFloorReached.Invoke(currFloorNum, currRequest.Direction);
-        cabinController.Btnsss(currFloorNum);
+        cabinController.OnGoalFloorReached(currFloorNum);
     }
 
     private void ReturnTempRequestsBack()

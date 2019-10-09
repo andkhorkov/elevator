@@ -31,7 +31,7 @@ namespace Cabin
             IsVisible = show;
         }
 
-        public void Btnsss(int floorNum)
+        public void OnGoalFloorReached(int floorNum)
         {
             btns[floorNum - 1].Reset();
         }
