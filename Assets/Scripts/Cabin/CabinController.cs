@@ -7,6 +7,7 @@ namespace Cabin
         [SerializeField] private CabinDisplay cabinDisplay;
         [SerializeField] private CanvasGroup cg;
         [SerializeField] private float fadeInTime = 0.25f;
+        [SerializeField] private CabinBtn[] btns;
 
         private ElevatorController elevator;
         private bool IsVisible;
@@ -23,6 +24,7 @@ namespace Cabin
             maxDelta = 1 / fadeInTime;
 
             elevator.FloorChanged += OnFloorChanged;
+            elevator.GoalFloorReached += OnGoalFloorReached;
         }
 
         public void ShowCabin(bool show)
@@ -33,6 +35,12 @@ namespace Cabin
         private void OnDestroy()
         {
             elevator.FloorChanged -= OnFloorChanged;
+            elevator.GoalFloorReached -= OnGoalFloorReached;
+        }
+
+        private void OnGoalFloorReached(int floorNum, ElevatorDirection direction)
+        {
+            btns[floorNum - 1].Reset();
         }
 
         private void OnFloorChanged(int floorNum)

@@ -261,6 +261,7 @@ public class ElevatorController : MonoBehaviour
         movingDirection = GetDirectionToRequestedFloor(currRequest.FloorNum);
         DirectionChanged.Invoke(movingDirection);
         nextFloorNum = movingDirection == ElevatorDirection.up ? currFloorNum + 1 : currFloorNum - 1;
+        nextFloorNum = Mathf.Clamp(nextFloorNum, 1, Floors.Count);
     }
 
     private ElevatorDirection GetDirectionToRequestedFloor(int floorNum)
@@ -276,11 +277,6 @@ public class ElevatorController : MonoBehaviour
             return;
         }
 
-        if (!Floors.ContainsKey(nextFloorNum))
-        {
-            Debug.Log(nextFloorNum);
-        }
-
         if (cabin.position == Floors[nextFloorNum].Position)
         {
             currFloorNum = nextFloorNum;
@@ -289,13 +285,13 @@ public class ElevatorController : MonoBehaviour
             do
             {
                 nextFloorNum = movingDirection == ElevatorDirection.up ? nextFloorNum + 1 : nextFloorNum - 1;
+                nextFloorNum = Mathf.Clamp(nextFloorNum, 1, Floors.Count);
 
                 if (nextFloorNum <= 0 || nextFloorNum > Floors.Count)
                 {
                     return;
                 }
-            }
-            while (!Floors.ContainsKey(nextFloorNum));
+            } while (Floors[nextFloorNum] == null);  
 
             return;
         }

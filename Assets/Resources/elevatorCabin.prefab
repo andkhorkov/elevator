@@ -1671,6 +1671,13 @@ MonoBehaviour:
   cabinDisplay: {fileID: 3289938481601993139}
   cg: {fileID: 2714811459681265792}
   fadeInTime: 0.25
+  btns:
+  - {fileID: 6907806802438425956}
+  - {fileID: 2828103770340407786}
+  - {fileID: 2292817977157628670}
+  - {fileID: 4320310084357613532}
+  - {fileID: 3144003975123886781}
+  - {fileID: 3484750313281573538}
 --- !u!225 &2714811459681265792
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -2006,7 +2013,6 @@ GameObject:
   - component: {fileID: 8301694315826899710}
   - component: {fileID: 8301694315826899711}
   - component: {fileID: 8301694315826899680}
-  - component: {fileID: 4597914628227201781}
   m_Layer: 5
   m_Name: buttonsPanel
   m_TagString: Untagged
@@ -2107,18 +2113,6 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
---- !u!225 &4597914628227201781
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8301694315826899682}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 1
-  m_IgnoreParentGroups: 0
 --- !u!1 &8301694315903329094
 GameObject:
   m_ObjectHideFlags: 0

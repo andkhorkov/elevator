@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 namespace Cabin
 {
-    public class CabinBtn : MonoBehaviour, IPointerClickHandler, IPointerDownHandler, IPointerUpHandler
+    public class CabinBtn : MonoBehaviour, IPointerClickHandler
     {
         [SerializeField] private CabinController cabin;
         [SerializeField] private int floorNum;
@@ -21,14 +21,10 @@ namespace Cabin
         public void OnPointerClick(PointerEventData eventData)
         {
             cabin.OnButtonClicked(floorNum);
-        }
-
-        public void OnPointerDown(PointerEventData eventData)
-        {
             sprBtn.color = Color.red;
         }
 
-        public void OnPointerUp(PointerEventData eventData)
+        public void Reset()
         {
             sprBtn.color = defaultColor;
         }
