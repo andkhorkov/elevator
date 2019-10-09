@@ -70,7 +70,6 @@ namespace Tests
 
             yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
 
-            Print();
             Assert.AreEqual(new List<int>() { 6, 4, 3, 2 }, visitedFloors);
         }
 
@@ -89,7 +88,6 @@ namespace Tests
 
             yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
 
-            Print();
             Assert.AreEqual(new List<int>() { 5,6,3,1 }, visitedFloors);
         }
 
@@ -108,7 +106,6 @@ namespace Tests
 
             yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
 
-            Print();
             Assert.AreEqual(new List<int>() { 6, 5, 3, 4 }, visitedFloors);
         }
 
@@ -127,7 +124,6 @@ namespace Tests
 
             yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
 
-            Print();
             Assert.AreEqual(new List<int>() { 3, 5, 6, 4 }, visitedFloors);
         }
 
@@ -148,7 +144,6 @@ namespace Tests
 
             yield return new AwaitUntilNumberOfApproachedFloorsIs(5, visitedFloors);
 
-            Print();
             Assert.AreEqual(new List<int>() { 6, 4, 3, 1, 2 }, visitedFloors);
         }
 
@@ -169,7 +164,6 @@ namespace Tests
 
             yield return new AwaitUntilNumberOfApproachedFloorsIs(3, visitedFloors);
 
-            Print();
             Assert.AreEqual(new List<int>() { 4, 3, 1 }, visitedFloors);
         }
 
@@ -184,7 +178,6 @@ namespace Tests
 
             yield return new AwaitUntilNumberOfApproachedFloorsIs(2, visitedFloors); // two events: first on arrive, second when doors closed and nobody requested with direction aligned with first request
 
-            Print();
             Assert.AreEqual(new List<int>() { 3, 3 }, visitedFloors);
         }
 
@@ -201,7 +194,6 @@ namespace Tests
 
             yield return new AwaitUntilNumberOfApproachedFloorsIs(3, visitedFloors);
 
-            Print();
             Assert.AreEqual(new List<int>() { 3, 3, 4 }, visitedFloors);
         }
 
@@ -222,7 +214,6 @@ namespace Tests
 
             yield return new AwaitUntilNumberOfApproachedFloorsIs(5, visitedFloors);
 
-            Print();
             Assert.AreEqual(new List<int>() { 6, 1, 2, 3, 5 }, visitedFloors);
         }
 
@@ -242,7 +233,6 @@ namespace Tests
 
             yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
 
-            Print();
             Assert.AreEqual(new List<int>() { 5, 4, 4, 3 }, visitedFloors);
         }
 
@@ -266,7 +256,6 @@ namespace Tests
 
             yield return new AwaitUntilNumberOfApproachedFloorsIs(6, visitedFloors);
 
-            Print();
             Assert.AreEqual(new List<int>() { 6, 3, 2, 4, 6, 5 }, visitedFloors);
         }
 

@@ -240,7 +240,7 @@ public class ElevatorController : MonoBehaviour
         {
             currRequests.Enqueue(request);
         }
-        else if ((desiredFloorNum - currFloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0)
+        else if ((desiredFloorNum - currFloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0) // could be more readable predicate..
         {
             currRequests.Enqueue(request);
         }
