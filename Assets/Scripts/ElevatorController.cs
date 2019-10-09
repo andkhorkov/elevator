@@ -244,9 +244,13 @@ public class ElevatorController : MonoBehaviour
         {
             currRequests.Enqueue(request);
         }
-        else
+        else if (currRequests.Count > 0)
         {
             currDelayedRequests.Enqueue(request);
+        }
+        else
+        {
+            currRequests.Enqueue(request);
         }
 
         currRequest = currRequests.Peek;

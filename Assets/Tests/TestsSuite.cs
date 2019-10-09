@@ -227,7 +227,7 @@ namespace Tests
         }
 
         [UnityTest]
-        public IEnumerator Elevator_RequestingDownWhileDoorsAreClosingTheSameFloor_()
+        public IEnumerator Elevator_RequestingDownWhileDoorsAreClosingTheSameFloor_CantExplain() // should've probably better count amount of times the doors opened
         {
             SetElevator();
 
@@ -244,6 +244,30 @@ namespace Tests
 
             Print();
             Assert.AreEqual(new List<int>() { 5, 4, 4, 3 }, visitedFloors);
+        }
+
+        [UnityTest]
+        public IEnumerator Elevator_WTF_CantExplain() 
+        {
+            SetElevator();
+
+            elevator.Floors[6].BtnDown.OnClick();
+            yield return new AwaitUntilElevatorReachFloor(6, elevator);
+            elevator.Floors[3].BtnDown.OnClick();
+            yield return new AwaitUntilElevatorReachFloor(4, elevator);
+            elevator.Floors[5].BtnDown.OnClick();
+            yield return new WaitForSeconds(0.5f);
+            elevator.Floors[2].BtnUp.OnClick();
+            yield return new WaitForSeconds(1);
+            elevator.Floors[4].BtnUp.OnClick();
+            yield return new WaitForSeconds(1);
+            yield return new AwaitUntilElevatorReachFloor(3, elevator);
+            elevator.Floors[6].BtnUp.OnClick(); // on 3rd floor he lied end went to 6th (emulated cabin btn)
+
+            yield return new AwaitUntilNumberOfApproachedFloorsIs(6, visitedFloors);
+
+            Print();
+            Assert.AreEqual(new List<int>() { 6, 3, 2, 4, 6, 5 }, visitedFloors);
         }
 
         private void Print()
