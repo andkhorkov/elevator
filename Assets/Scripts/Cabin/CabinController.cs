@@ -7,6 +7,7 @@ namespace Cabin
         [SerializeField] private CabinDisplay cabinDisplay;
         [SerializeField] private CanvasGroup cg;
         [SerializeField] private float fadeInTime = 0.25f;
+        [SerializeField] private CabinBtn[] btns;
 
         private ElevatorController elevator;
         private bool IsVisible;
@@ -28,6 +29,11 @@ namespace Cabin
         public void ShowCabin(bool show)
         {
             IsVisible = show;
+        }
+
+        public void Btnsss(int floorNum)
+        {
+            btns[floorNum - 1].Reset();
         }
 
         private void OnDestroy()

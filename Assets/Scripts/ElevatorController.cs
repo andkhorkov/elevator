@@ -74,6 +74,10 @@ public class ElevatorController : MonoBehaviour
     private int currFloorNum;
     private int nextFloorNum;
 
+    public int RequestsCount => currRequests.Count + currOppositeRequests.Count + currDelayedRequests.Count +
+                                tempBufferRequests.Count;
+    public bool IsIdle => currentState == idleState;
+    public ElevatorDirection MovingDirection => movingDirection;
     public int CurrFloorNum => currFloorNum;
     public Dictionary<int, FloorController> Floors { get; private set; } // elevator might serve not all the floors, that's why it's a Dictionary. Maybe some DummyFloor class also needed.
 
@@ -83,7 +87,7 @@ public class ElevatorController : MonoBehaviour
 
     public event Action<ElevatorDirection> DirectionChanged = delegate { };
 
-    public event Action<int, ElevatorDirection> GoalFloorReached = delegate { };
+    public static event Action<int, ElevatorDirection> GoalFloorReached = delegate { };
 
     public void Initialize(Dictionary<int, FloorController> floors, CabinController cabinController, float speed)
     {
@@ -108,6 +112,11 @@ public class ElevatorController : MonoBehaviour
         currentState.Update();
     }
 
+    public bool IsRequestExists(Request request)
+    {
+        return currRequests != null && currRequests.Contains(request);
+    }
+
     private void SetState(State state)
     {
         if (currentState == state)
@@ -128,6 +137,7 @@ public class ElevatorController : MonoBehaviour
     {
         SetState(doorsCycleState);
         GoalFloorReached.Invoke(currFloorNum, currRequest.Direction);
+        cabinController.Btnsss(currFloorNum);
     }
 
     private void ReturnTempRequestsBack()
@@ -150,6 +160,7 @@ public class ElevatorController : MonoBehaviour
     {
         if(currRequests.Count > 0)
         {
+            GoalFloorReached.Invoke(currRequest.FloorNum, currRequest.Direction);
             currRequests.Dequeue();
         }
 
@@ -261,6 +272,7 @@ public class ElevatorController : MonoBehaviour
         movingDirection = GetDirectionToRequestedFloor(currRequest.FloorNum);
         DirectionChanged.Invoke(movingDirection);
         nextFloorNum = movingDirection == ElevatorDirection.up ? currFloorNum + 1 : currFloorNum - 1;
+        nextFloorNum = Mathf.Clamp(nextFloorNum, 1, Floors.Count);
     }
 
     private ElevatorDirection GetDirectionToRequestedFloor(int floorNum)
@@ -276,11 +288,6 @@ public class ElevatorController : MonoBehaviour
             return;
         }
 
-        if (!Floors.ContainsKey(nextFloorNum))
-        {
-            Debug.Log(nextFloorNum);
-        }
-
         if (cabin.position == Floors[nextFloorNum].Position)
         {
             currFloorNum = nextFloorNum;
@@ -289,13 +296,14 @@ public class ElevatorController : MonoBehaviour
             do
             {
                 nextFloorNum = movingDirection == ElevatorDirection.up ? nextFloorNum + 1 : nextFloorNum - 1;
+                nextFloorNum = Mathf.Clamp(nextFloorNum, 1, Floors.Count);
 
                 if (nextFloorNum <= 0 || nextFloorNum > Floors.Count)
                 {
                     return;
                 }
             }
-            while (!Floors.ContainsKey(nextFloorNum));
+            while (Floors[nextFloorNum] == null); // pass floors without elevator doors, if such floors exist
 
             return;
         }

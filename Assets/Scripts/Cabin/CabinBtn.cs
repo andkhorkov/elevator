@@ -21,14 +21,20 @@ namespace Cabin
         public void OnPointerClick(PointerEventData eventData)
         {
             cabin.OnButtonClicked(floorNum);
+            sprBtn.color = Color.red;
         }
 
         public void OnPointerDown(PointerEventData eventData)
         {
-            sprBtn.color = Color.red;
+            //sprBtn.color = Color.red;
         }
 
         public void OnPointerUp(PointerEventData eventData)
+        {
+            
+        }
+
+        public void Reset()
         {
             sprBtn.color = defaultColor;
         }

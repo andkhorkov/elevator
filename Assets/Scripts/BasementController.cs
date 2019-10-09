@@ -1,18 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using Floor;
 using UnityEngine;
 
-public class ElevatorCreator : MonoBehaviour
+public class BasementController : MonoBehaviour
 {
     [SerializeField] private int elevatorSpeed = 400;
+    [SerializeField] private float shaftOffset = 800;
+    [SerializeField] private float shaftWidth = 800;
     [SerializeField] private int numFloors = 6;
-    [SerializeField] private int numElevators = 1;
+    [SerializeField] private int numElevators = 2;
     [SerializeField] private float ceilToDoorOffset = 10;
     [SerializeField] private float ceilWidth = 10;
     [SerializeField] private Vector2 desiredResolution = new Vector2(2880, 1800);
     [SerializeField] private SpriteRenderer wall;
 
+    private ElevatorController[] elevators;
+
     public static event Action<ElevatorController> ElevatorInitialized = delegate {  };
+
+    public void SetNumElevators(int numElevators) //for tests
+    {
+        this.numElevators = numElevators;
+    }
 
     private void Start()
     {
@@ -20,14 +30,14 @@ public class ElevatorCreator : MonoBehaviour
 
         var origin = Camera.main.ScreenToWorldPoint(Vector3.zero);
         origin.z = 0;
-        var floorPositions = BuildFloors(origin);
+        var floorPositions = BuildCeilings(origin);
         BuildElevators(floorPositions, origin);
     }
 
-    private Vector3[] BuildFloors(Vector3 origin)
+    private Vector3[] BuildCeilings(Vector3 origin)
     {
         var ceiling = Resources.Load<SpriteRenderer>("ceiling");
-        var floorPrefab = Resources.Load<Floor.FloorController>("floorController");
+        var floorPrefab = Resources.Load<FloorController>("floorController");
         var doorSize = floorPrefab.DoorController.DoorSize;
         var floorPositions = new Vector3[numFloors + 1];
         var offset = desiredResolution.x * 0.5f * Vector3.right;
@@ -48,7 +58,8 @@ public class ElevatorCreator : MonoBehaviour
 
     private void BuildElevators(Vector3[] floorPositions, Vector3 origin)
     {
-        var floorControllerPrefab = Resources.Load<Floor.FloorController>("floorController");
+        elevators = new ElevatorController[numElevators];
+        var floorControllerPrefab = Resources.Load<FloorController>("floorController");
         var cabinPrefab = Resources.Load<Cabin.CabinController>("elevatorCabin");
 
         for (int i = 0; i < numElevators; i++)
@@ -56,10 +67,10 @@ public class ElevatorCreator : MonoBehaviour
             var elevatorNum = i + 1;
             var elevator = new GameObject($"elevator{elevatorNum}");
             var elevatorController = elevator.AddComponent<ElevatorController>();
-            var elevatorPos = origin + 700 * Vector3.right * (i + 1);
+            var elevatorPos = origin + (shaftOffset + shaftWidth * i) * Vector3.right;
             elevator.transform.position = elevatorPos;
             elevator.transform.SetParent(transform);
-            var floors = new Dictionary<int, Floor.FloorController>(numFloors);
+            var floors = new Dictionary<int, FloorController>(numFloors);
 
             for (int j = 0; j < numFloors; j++)
             {
@@ -68,7 +79,7 @@ public class ElevatorCreator : MonoBehaviour
                 floor.transform.position = new Vector3(elevatorPos.x, floorPositions[j].y + 0.5f * ceilWidth);
                 floor.name = $"doors{floorNum}";
                 floors[floorNum] = floor;
-                floor.Initialize(floorNum, elevatorController);
+                floor.Initialize(floorNum, elevatorController, this);
             }
 
             floors[1].SwitchOffDownBtn();
@@ -80,6 +91,7 @@ public class ElevatorCreator : MonoBehaviour
             cabin.Initialize(elevatorController);
             
             elevatorController.Initialize(floors, cabin, elevatorSpeed);
+            elevators[i] = elevatorController;
         }
     }
 
@@ -88,6 +100,52 @@ public class ElevatorCreator : MonoBehaviour
         float nativeToRealRatio = desiredResolution.x / Screen.width;
         Camera.main.orthographicSize = 0.5f * nativeToRealRatio * Screen.height;
         wall.size = new Vector2(wall.size.x, wall.size.x / Camera.main.aspect);
+    }
+
+    public void AddRequest(int desiredFloorNum, ElevatorDirection desiredDirection)
+    {
+        var request = new ElevatorController.Request(desiredDirection, desiredFloorNum);
+        var elevator = GetClosestElevator(request);
+
+        if (elevator == null)
+        {
+            return;
+        }
+        
+        elevator.AddRequest(desiredFloorNum, desiredDirection);
+    }
+
+    private ElevatorController GetClosestElevator(ElevatorController.Request request)
+    {
+        var sameDirAndIdleElevators = new List<ElevatorController>();
+        var otherElevators = new List<ElevatorController>();
+
+        for (int i = 0; i < elevators.Length; i++)
+        {
+            var elevator = elevators[i];
+
+            if (elevator.IsRequestExists(request))
+            {
+                return null;
+            }
+
+            if (elevator.IsIdle || elevator.MovingDirection == request.Direction)
+            {
+                sameDirAndIdleElevators.Add(elevator);
+                continue;
+            }
+
+            otherElevators.Add(elevator);
+        }
+
+        if (sameDirAndIdleElevators.Count > 0)
+        {
+            sameDirAndIdleElevators.Sort((a, b) => Mathf.Abs(a.CurrFloorNum - request.FloorNum).CompareTo(Mathf.Abs(b.CurrFloorNum - request.FloorNum)));
+            return sameDirAndIdleElevators[0];
+        }
+
+        otherElevators.Sort((a, b) => a.RequestsCount.CompareTo(b.RequestsCount));
+        return otherElevators[0];
     }
 
     //void OnDrawGizmos()
@@ -104,5 +162,13 @@ public class ElevatorCreator : MonoBehaviour
 
         Camera.main.orthographicSize = desiredHalfHeight;
 
+    }
+
+    public class ElevatorComparer : IComparer<ElevatorController>
+    {
+        public int Compare(ElevatorController x, ElevatorController y)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

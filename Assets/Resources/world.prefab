@@ -230,8 +230,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   elevatorSpeed: 400
+  shaftOffset: 600
+  shaftWidth: 1000
   numFloors: 6
-  numElevators: 1
+  numElevators: 2
   ceilToDoorOffset: 10
   ceilWidth: 10
   desiredResolution: {x: 2880, y: 1800}

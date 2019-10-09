@@ -9,6 +9,7 @@ namespace Floor
         [SerializeField] private FloorBtn btnUp;
         [SerializeField] private FloorBtn btnDown;
 
+        private BasementController basement;
         private ElevatorController elevator;
 
         public FloorBtn BtnUp => btnUp;
@@ -20,16 +21,17 @@ namespace Floor
 
         public Vector3 Position { get; private set; }
 
-        public void Initialize(int num, ElevatorController elevator)
+        public void Initialize(int num, ElevatorController elevator, BasementController basement)
         {
             Num = num;
             Position = transform.position;
             this.elevator = elevator;
+            this.basement = basement;
 
             elevator.FloorChanged += OnFloorChanged;
             elevator.EnteredIdle += OnEnteredIdle;
             elevator.DirectionChanged += OnDirectionChanged;
-            elevator.GoalFloorReached += OnGoalFloorReached;
+            ElevatorController.GoalFloorReached += OnGoalFloorReached;
         }
 
         private void OnDestroy()
@@ -37,7 +39,7 @@ namespace Floor
             elevator.FloorChanged -= OnFloorChanged;
             elevator.EnteredIdle -= OnEnteredIdle;
             elevator.DirectionChanged -= OnDirectionChanged;
-            elevator.GoalFloorReached -= OnGoalFloorReached;
+            ElevatorController.GoalFloorReached -= OnGoalFloorReached;
         }
 
         public void OnDirectionChanged(ElevatorDirection direction)
@@ -77,7 +79,7 @@ namespace Floor
 
         public void OnButtonClicked(ElevatorDirection direction)
         {
-            elevator.AddRequest(Num, direction);
+            basement.AddRequest(Num, direction);
         }
 
         private void OnFloorChanged(int floorNum)

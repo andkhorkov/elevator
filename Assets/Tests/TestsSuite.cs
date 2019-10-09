@@ -24,6 +24,8 @@ namespace Tests
 
             cam.AddComponent<Camera>();
             world = Object.Instantiate(Resources.Load<GameObject>("world"));
+            var basement = world.GetComponentInChildren<BasementController>();
+            basement.SetNumElevators(1);
             Time.timeScale = 100;
         }
 
@@ -35,7 +37,7 @@ namespace Tests
         private void SetElevator()
         {
             elevator = world.GetComponentInChildren<ElevatorController>();
-            elevator.GoalFloorReached += OnElevatorReachGoalFloor;
+            ElevatorController.GoalFloorReached += OnElevatorReachGoalFloor;
         }
 
         [TearDown]
@@ -44,6 +46,7 @@ namespace Tests
             Object.Destroy(world.gameObject);
             Time.timeScale = 1;
             visitedFloors.Clear();
+            ElevatorController.GoalFloorReached -= OnElevatorReachGoalFloor;
         }
 
         [UnityTest]
