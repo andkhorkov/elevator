@@ -136,8 +136,22 @@ public class ElevatorController : MonoBehaviour
     private void OnReachGoalFloor()
     {
         SetState(doorsCycleState);
-        GoalFloorReached.Invoke(currFloorNum, currRequest.Direction);
+        NotifyFloor(currFloorNum, currRequest.Direction);
+        
         cabinController.OnGoalFloorReached(currFloorNum);
+    }
+
+    private void NotifyFloor(int floorNum, ElevatorDirection direction)
+    {
+        GoalFloorReached.Invoke(floorNum, direction);
+
+        if (!Floors.TryGetValue(floorNum, out var floorController))
+        {
+            Debug.Log($"no floor on {floorNum}");
+            return;
+        }
+
+        floorController.ResetHereSign();
     }
 
     private void ReturnTempRequestsBack()

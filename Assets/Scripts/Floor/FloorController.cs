@@ -98,10 +98,14 @@ namespace Floor
             {
                 return;
             }
-            
-            floorDisplay.OnGoalFloorReached();
+
             btnUp.OnGoalFloorReached(direction);
             btnDown.OnGoalFloorReached(direction);
+        }
+
+        public void ResetHereSign()
+        {
+            floorDisplay.OnGoalFloorReached();
         }
     }
 }
