@@ -1,0 +1,8 @@
+# Elevator algorithm
+
+- if there is no tasks, then the first task that comes gets prioritized
+- if there is already tasks and new task is the same direction as prioritzed tasks and either floor of new task is on the way or first task didn't served yet, then task adds to prioritized queue depending on the requested floor and desired direction. For example if we go up and didn't serve first request down yet then if newly requested floor is higher than the first in the queue - it goes to the top of the queue. And wise versa for opposite situation. Descending order for tasks down and ascending for tasks up with respect to current cabin position(floor number).
+- opposite direction tasks adds to different queue, that would be served next
+- also while you go one direction and receive the task that has the same desired destination direction, but it's not on the way (elevator is already moving) , then this tasks would be added to postponed queue that would be served after opposite
+- when there is no more tasks in a current queue, elevator jumps to next queue. current -> opposite -> postponed
+- I also have a temporary buffer queue for those tasks that were added during door open/close cycle.. That's a work around for the problem when current task is not dequeued yet (I'm dequeuing it when are doors closed), but new task appears and wants to take top of the priority queue. Those queues are priority queues with some modifications, that allows me to remove items and ReHeapify and also keeps only unique requests.
