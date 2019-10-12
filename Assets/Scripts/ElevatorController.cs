@@ -160,7 +160,7 @@ public class ElevatorController : MonoBehaviour
         {
             var request = tempBufferRequests.Dequeue();
 
-            if (request.FloorNum == currFloorNum && movingDirection == request.Direction)
+            if (request.FloorNum == currFloorNum && (movingDirection == request.Direction || currRequests.Count == 0))
             {
                 GoalFloorReached.Invoke(currFloorNum, request.Direction);
                 continue;
