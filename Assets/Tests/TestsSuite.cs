@@ -24,7 +24,7 @@ namespace Tests
 
             cam.AddComponent<Camera>();
             world = Object.Instantiate(Resources.Load<GameObject>("world"));
-            Time.timeScale = 100;
+            Time.timeScale = 10;
         }
 
         private void OnElevatorReachGoalFloor(int floorNum, ElevatorDirection direction)
@@ -68,7 +68,7 @@ namespace Tests
             elevator.Floors[2].BtnDown.OnClick();
             yield return null;
 
-            yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
+            yield return new AwaitUntilElevatorIsIdle(elevator);
 
             Assert.AreEqual(new List<int>() { 6, 4, 3, 2 }, visitedFloors);
         }
@@ -86,7 +86,7 @@ namespace Tests
             yield return new AwaitUntilElevatorReachFloor(2, elevator);
             elevator.Floors[1].BtnUp.OnClick();
 
-            yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
+            yield return new AwaitUntilElevatorIsIdle(elevator);
 
             Assert.AreEqual(new List<int>() { 5,6,3,1 }, visitedFloors);
         }
@@ -104,7 +104,7 @@ namespace Tests
             yield return new WaitForSeconds(0.2f);
             elevator.Floors[3].BtnUp.OnClick();
 
-            yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
+            yield return new AwaitUntilElevatorIsIdle(elevator);
 
             Assert.AreEqual(new List<int>() { 6, 5, 3, 4 }, visitedFloors);
         }
@@ -115,14 +115,14 @@ namespace Tests
             SetElevator();
 
             elevator.Floors[5].BtnUp.OnClick();
-            yield return new WaitForSeconds(2);
+            yield return new AwaitUntilElevatorReachFloor(2, elevator);
             elevator.Floors[3].BtnUp.OnClick();
             yield return new WaitForSeconds(0.5f);
             elevator.Floors[4].BtnDown.OnClick();
             yield return new WaitForSeconds(0.2f);
             elevator.Floors[6].BtnDown.OnClick();
 
-            yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
+            yield return new AwaitUntilElevatorIsIdle(elevator);
 
             Assert.AreEqual(new List<int>() { 3, 5, 6, 4 }, visitedFloors);
         }
@@ -133,7 +133,7 @@ namespace Tests
             SetElevator();
 
             elevator.Floors[3].BtnDown.OnClick();
-            yield return new WaitForSeconds(2);
+            yield return new AwaitUntilElevatorReachFloor(2, elevator);
             elevator.Floors[6].BtnDown.OnClick();
             yield return new WaitForSeconds(1);
             elevator.Floors[4].BtnDown.OnClick();
@@ -142,7 +142,7 @@ namespace Tests
             yield return new WaitForSeconds(0.4f);
             elevator.Floors[2].BtnUp.OnClick();
 
-            yield return new AwaitUntilNumberOfApproachedFloorsIs(5, visitedFloors);
+            yield return new AwaitUntilElevatorIsIdle(elevator);
 
             Assert.AreEqual(new List<int>() { 6, 4, 3, 1, 2 }, visitedFloors);
         }
@@ -153,16 +153,16 @@ namespace Tests
             SetElevator();
 
             elevator.Floors[3].BtnDown.OnClick();
-            yield return new WaitForSeconds(2);
+            yield return new AwaitUntilElevatorReachFloor(2, elevator);
             elevator.Floors[4].BtnDown.OnClick();
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(0.2f);
             elevator.Floors[3].BtnDown.OnClick();
             yield return new WaitForSeconds(0.8f);
             elevator.Floors[1].BtnUp.OnClick();
             yield return new WaitForSeconds(0.4f);
             elevator.Floors[1].BtnUp.OnClick();
 
-            yield return new AwaitUntilNumberOfApproachedFloorsIs(3, visitedFloors);
+            yield return new AwaitUntilElevatorIsIdle(elevator);
 
             Assert.AreEqual(new List<int>() { 4, 3, 1 }, visitedFloors);
         }
@@ -176,7 +176,7 @@ namespace Tests
             yield return new WaitForSeconds(2);
             elevator.Floors[3].BtnUp.OnClick();
 
-            yield return new AwaitUntilNumberOfApproachedFloorsIs(2, visitedFloors); // two events: first on arrive, second when doors closed and nobody requested with direction aligned with first request
+            yield return new AwaitUntilElevatorIsIdle(elevator); 
 
             Assert.AreEqual(new List<int>() { 3, 3 }, visitedFloors);
         }
@@ -192,7 +192,7 @@ namespace Tests
             yield return new WaitForSeconds(1);
             elevator.Floors[4].BtnUp.OnClick();
 
-            yield return new AwaitUntilNumberOfApproachedFloorsIs(3, visitedFloors);
+            yield return new AwaitUntilElevatorIsIdle(elevator);
 
             Assert.AreEqual(new List<int>() { 3, 3, 4 }, visitedFloors);
         }
@@ -212,7 +212,7 @@ namespace Tests
             yield return new WaitForSeconds(1);
             elevator.Floors[2].BtnUp.OnClick();
 
-            yield return new AwaitUntilNumberOfApproachedFloorsIs(5, visitedFloors);
+            yield return new AwaitUntilElevatorIsIdle(elevator);
 
             Assert.AreEqual(new List<int>() { 6, 1, 2, 3, 5 }, visitedFloors);
         }
@@ -231,7 +231,7 @@ namespace Tests
             yield return new WaitForSeconds(1);
             elevator.Floors[3].BtnDown.OnClick();
 
-            yield return new AwaitUntilNumberOfApproachedFloorsIs(4, visitedFloors);
+            yield return new AwaitUntilElevatorIsIdle(elevator);
 
             Assert.AreEqual(new List<int>() { 5, 4, 4, 3 }, visitedFloors);
         }
@@ -254,7 +254,7 @@ namespace Tests
             yield return new AwaitUntilElevatorReachFloor(3, elevator);
             elevator.Floors[6].BtnUp.OnClick(); // on 3rd floor he lied end went to 6th (emulated cabin btn)
 
-            yield return new AwaitUntilNumberOfApproachedFloorsIs(6, visitedFloors);
+            yield return new AwaitUntilElevatorIsIdle(elevator);
 
             Assert.AreEqual(new List<int>() { 6, 3, 2, 4, 6, 5 }, visitedFloors);
         }
@@ -286,17 +286,15 @@ namespace Tests
         public override bool keepWaiting => elevator.CurrFloorNum != requiredFloorNum;
     }
 
-    public class AwaitUntilNumberOfApproachedFloorsIs : CustomYieldInstruction
+    public class AwaitUntilElevatorIsIdle : CustomYieldInstruction
     {
-        private int requiredNumOfVisitedFloors;
-        private List<int> visitedFloors;
+        private ElevatorController elevator;
 
-        public AwaitUntilNumberOfApproachedFloorsIs(int requiredNumOfVisitedFloors, List<int> visitedFloors)
+        public AwaitUntilElevatorIsIdle(ElevatorController elevator)
         {
-            this.requiredNumOfVisitedFloors = requiredNumOfVisitedFloors;
-            this.visitedFloors = visitedFloors;
+            this.elevator = elevator;
         }
 
-        public override bool keepWaiting => visitedFloors.Count != requiredNumOfVisitedFloors;
+        public override bool keepWaiting => !elevator.IsIdle;
     }
 }

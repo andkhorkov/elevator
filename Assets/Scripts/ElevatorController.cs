@@ -74,6 +74,7 @@ public class ElevatorController : MonoBehaviour
     private int currFloorNum;
     private int nextFloorNum;
 
+    public bool IsIdle => currentState == idleState;
     public int CurrFloorNum => currFloorNum;
     public Dictionary<int, FloorController> Floors { get; private set; } // elevator might serve not all the floors, that's why it's a Dictionary. Maybe some DummyFloor class also needed.
 
