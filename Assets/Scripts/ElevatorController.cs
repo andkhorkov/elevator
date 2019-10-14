@@ -84,7 +84,9 @@ public class ElevatorController : MonoBehaviour
 
     public event Action<ElevatorDirection> DirectionChanged = delegate { };
 
-    public event Action<int, ElevatorDirection> GoalFloorReached = delegate { };
+    public event Action<Request> GoalFloorReached = delegate { };
+
+    public event Action<Request> RequestNoLongerActual = delegate { };
 
     public void Initialize(Dictionary<int, FloorController> floors, CabinController cabinController, float speed)
     {
@@ -100,7 +102,7 @@ public class ElevatorController : MonoBehaviour
         SetState(idleState);
 
         FloorChanged.Invoke(currFloorNum);
-        GoalFloorReached.Invoke(currFloorNum, ElevatorDirection.none);
+        GoalFloorReached.Invoke(new Request(ElevatorDirection.none, currFloorNum));
         cabinController.ShowCabin(false);
     }
 
@@ -128,7 +130,7 @@ public class ElevatorController : MonoBehaviour
     private void OnReachGoalFloor()
     {
         SetState(doorsCycleState);
-        GoalFloorReached.Invoke(currFloorNum, currRequest.Direction);
+        GoalFloorReached.Invoke(currRequest);
     }
 
     private void ReturnTempRequestsBack()
@@ -139,7 +141,7 @@ public class ElevatorController : MonoBehaviour
 
             if (request.FloorNum == currFloorNum && (movingDirection == request.Direction || currRequests.Count == 0))
             {
-                GoalFloorReached.Invoke(currFloorNum, request.Direction);
+                RequestNoLongerActual.Invoke(request);
                 continue;
             }
 
@@ -168,7 +170,7 @@ public class ElevatorController : MonoBehaviour
             if (currRequests.Count == 0 && currOppositeRequests.Contains(symmetricRequest))
             {
                 currOppositeRequests.Remove(symmetricRequest);
-                GoalFloorReached.Invoke(currFloorNum, symmetricRequest.Direction);
+                RequestNoLongerActual.Invoke(symmetricRequest);
             }
 
             if (currOppositeRequests.Count > 0)
@@ -229,7 +231,7 @@ public class ElevatorController : MonoBehaviour
         }
         else if (request.Equals(currRequest))
         {
-            GoalFloorReached.Invoke(currFloorNum, currRequest.Direction);
+            RequestNoLongerActual.Invoke(currRequest);
 
             return;
         }

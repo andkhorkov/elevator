@@ -30,6 +30,7 @@ namespace Floor
             elevator.EnteredIdle += OnEnteredIdle;
             elevator.DirectionChanged += OnDirectionChanged;
             elevator.GoalFloorReached += OnGoalFloorReached;
+            elevator.RequestNoLongerActual += OnRequestNoLongerActual;
         }
 
         private void OnDestroy()
@@ -38,6 +39,7 @@ namespace Floor
             elevator.EnteredIdle -= OnEnteredIdle;
             elevator.DirectionChanged -= OnDirectionChanged;
             elevator.GoalFloorReached -= OnGoalFloorReached;
+            elevator.RequestNoLongerActual -= OnRequestNoLongerActual;
         }
 
         public void OnDirectionChanged(ElevatorDirection direction)
@@ -90,16 +92,26 @@ namespace Floor
             floorDisplay.OnEnteredIdle();
         }
 
-        public void OnGoalFloorReached(int floorNum, ElevatorDirection direction)
+        private void OnGoalFloorReached(ElevatorController.Request request)
         {
-            if (floorNum != Num)
+            SetBtnsState(request);
+        }
+
+        private void OnRequestNoLongerActual(ElevatorController.Request request)
+        {
+            SetBtnsState(request);
+        }
+
+        private void SetBtnsState(ElevatorController.Request request)
+        {
+            if (request.FloorNum != Num)
             {
                 return;
             }
-            
+
             floorDisplay.OnGoalFloorReached();
-            btnUp.OnGoalFloorReached(direction);
-            btnDown.OnGoalFloorReached(direction);
+            btnUp.OnGoalFloorReached(request.Direction);
+            btnDown.OnGoalFloorReached(request.Direction);
         }
     }
 }

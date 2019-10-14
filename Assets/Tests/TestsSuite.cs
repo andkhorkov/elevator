@@ -27,9 +27,9 @@ namespace Tests
             Time.timeScale = 10;
         }
 
-        private void OnElevatorReachGoalFloor(int floorNum, ElevatorDirection direction)
+        private void OnElevatorReachGoalFloor(ElevatorController.Request request)
         {
-            visitedFloors.Add(floorNum);
+            visitedFloors.Add(request.FloorNum);
         }
 
         private void SetElevator()
@@ -178,7 +178,7 @@ namespace Tests
 
             yield return new AwaitUntilElevatorIsIdle(elevator); 
 
-            Assert.AreEqual(new List<int>() { 3, 3 }, visitedFloors);
+            Assert.AreEqual(new List<int>() { 3 }, visitedFloors);
         }
 
         [UnityTest]
@@ -194,7 +194,7 @@ namespace Tests
 
             yield return new AwaitUntilElevatorIsIdle(elevator);
 
-            Assert.AreEqual(new List<int>() { 3, 3, 4 }, visitedFloors);
+            Assert.AreEqual(new List<int>() { 3, 4 }, visitedFloors);
         }
 
         [UnityTest]
@@ -233,7 +233,7 @@ namespace Tests
 
             yield return new AwaitUntilElevatorIsIdle(elevator);
 
-            Assert.AreEqual(new List<int>() { 5, 4, 4, 3 }, visitedFloors);
+            Assert.AreEqual(new List<int>() { 5, 4, 3 }, visitedFloors);
         }
 
         [UnityTest]

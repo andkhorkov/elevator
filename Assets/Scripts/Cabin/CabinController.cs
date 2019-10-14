@@ -25,6 +25,7 @@ namespace Cabin
 
             elevator.FloorChanged += OnFloorChanged;
             elevator.GoalFloorReached += OnGoalFloorReached;
+            elevator.RequestNoLongerActual += OnRequestNoLongerActual;
         }
 
         public void ShowCabin(bool show)
@@ -36,11 +37,22 @@ namespace Cabin
         {
             elevator.FloorChanged -= OnFloorChanged;
             elevator.GoalFloorReached -= OnGoalFloorReached;
+            elevator.RequestNoLongerActual -= OnRequestNoLongerActual;
         }
 
-        private void OnGoalFloorReached(int floorNum, ElevatorDirection direction)
+        private void OnGoalFloorReached(ElevatorController.Request request)
         {
-            btns[floorNum - 1].Reset();
+            SetBtnState(request);
+        }
+
+        private void OnRequestNoLongerActual(ElevatorController.Request request)
+        {
+            SetBtnState(request);
+        }
+
+        private void SetBtnState(ElevatorController.Request request)
+        {
+            btns[request.FloorNum - 1].Reset();
         }
 
         private void OnFloorChanged(int floorNum)
@@ -54,4 +66,3 @@ namespace Cabin
         }
     }
 }
-
