@@ -29,8 +29,13 @@ namespace Tests
             Time.timeScale = 10;
         }
 
-        private void OnElevatorReachGoalFloor(ElevatorController.Request request)
+        private void OnElevatorReachGoalFloor(ElevatorController.Request request, ElevatorController elevator)
         {
+            if (this.elevator != elevator)
+            {
+                return;
+            }
+
             visitedFloors.Add(request.FloorNum);
         }
 

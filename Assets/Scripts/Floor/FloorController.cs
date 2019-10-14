@@ -94,12 +94,12 @@ namespace Floor
             floorDisplay.OnEnteredIdle();
         }
 
-        private void OnGoalFloorReached(ElevatorController.Request request)
+        private void OnGoalFloorReached(ElevatorController.Request request, ElevatorController elevator)
         {
             SetBtnsState(request);
         }
 
-        private void OnRequestNoLongerActual(ElevatorController.Request request)
+        private void OnRequestNoLongerActual(ElevatorController.Request request, ElevatorController elevator)
         {
             SetBtnsState(request);
         }

@@ -24,6 +24,15 @@ namespace Cabin
             maxDelta = 1 / fadeInTime;
 
             elevator.FloorChanged += OnFloorChanged;
+            ElevatorController.GoalFloorReached += OnGoalFloorReached;
+            ElevatorController.RequestNoLongerActual += OnRequestNoLongerActual;
+        }
+
+        private void OnDestroy()
+        {
+            elevator.FloorChanged -= OnFloorChanged;
+            ElevatorController.GoalFloorReached -= OnGoalFloorReached;
+            ElevatorController.RequestNoLongerActual -= OnRequestNoLongerActual;
         }
 
         public void ShowCabin(bool show)
@@ -31,14 +40,29 @@ namespace Cabin
             IsVisible = show;
         }
 
-        public void OnGoalFloorReached(int floorNum)
+        private void OnGoalFloorReached(ElevatorController.Request request, ElevatorController elevator)
         {
-            btns[floorNum - 1].Reset();
+            if (this.elevator != elevator)
+            {
+                return;
+            }
+
+            SetBtnState(request.FloorNum);
         }
 
-        private void OnDestroy()
+        private void OnRequestNoLongerActual(ElevatorController.Request request, ElevatorController elevator)
         {
-            elevator.FloorChanged -= OnFloorChanged;
+            if (this.elevator != elevator)
+            {
+                return;
+            }
+
+            SetBtnState(request.FloorNum);
+        }
+
+        private void SetBtnState(int floorNum)
+        {
+            btns[floorNum - 1].Reset();
         }
 
         private void OnFloorChanged(int floorNum)

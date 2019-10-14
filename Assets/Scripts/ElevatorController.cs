@@ -87,9 +87,9 @@ public class ElevatorController : MonoBehaviour
 
     public event Action<ElevatorDirection> DirectionChanged = delegate { };
 
-    public static event Action<Request> GoalFloorReached = delegate { }; // it's better to refactor in such way that each floor has all the doors in it, then we wouldn't need this broadcasting event, that every FloorController receives.
+    public static event Action<Request, ElevatorController> GoalFloorReached = delegate { }; // it's better to refactor in such way that each floor has all the doors in it, then we wouldn't need this broadcasting event, that every FloorController receives.
 
-    public static event Action<Request> RequestNoLongerActual = delegate { };
+    public static event Action<Request, ElevatorController> RequestNoLongerActual = delegate { };
 
     public void Initialize(Dictionary<int, FloorController> floors, CabinController cabinController, float speed)
     {
@@ -105,7 +105,7 @@ public class ElevatorController : MonoBehaviour
         SetState(idleState);
 
         FloorChanged.Invoke(currFloorNum);
-        GoalFloorReached.Invoke(new Request(ElevatorDirection.none, currFloorNum));
+        GoalFloorReached.Invoke(new Request(ElevatorDirection.none, currFloorNum), this);
         cabinController.ShowCabin(false);
     }
 
@@ -139,13 +139,11 @@ public class ElevatorController : MonoBehaviour
     {
         SetState(doorsCycleState);
         NotifyFloor(currRequest);
-        
-        cabinController.OnGoalFloorReached(currFloorNum);
     }
 
     private void NotifyFloor(Request request)
     {
-        GoalFloorReached.Invoke(request);
+        GoalFloorReached.Invoke(request, this);
 
         if (!Floors.TryGetValue(request.FloorNum, out var floorController))
         {
@@ -164,7 +162,7 @@ public class ElevatorController : MonoBehaviour
 
             if (request.FloorNum == currFloorNum && (movingDirection == request.Direction || currRequests.Count == 0))
             {
-                RequestNoLongerActual(request);
+                RequestNoLongerActual(request, this);
                 continue;
             }
 
@@ -177,7 +175,7 @@ public class ElevatorController : MonoBehaviour
         if(currRequests.Count > 0)
         {
             var request = currRequests.Dequeue();
-            RequestNoLongerActual.Invoke(request); 
+            RequestNoLongerActual.Invoke(request, this); 
         }
 
         if (currRequests.Count > 0)
@@ -194,7 +192,7 @@ public class ElevatorController : MonoBehaviour
             if (currRequests.Count == 0 && currOppositeRequests.Contains(symmetricRequest))
             {
                 currOppositeRequests.Remove(symmetricRequest);
-                RequestNoLongerActual.Invoke(symmetricRequest);
+                RequestNoLongerActual.Invoke(symmetricRequest, this);
             }
 
             if (currOppositeRequests.Count > 0)
@@ -250,12 +248,11 @@ public class ElevatorController : MonoBehaviour
         else if (currentState == doorsCycleState)
         {
             tempBufferRequests.Enqueue(request);
-
             return;
         }
         else if (request.Equals(currRequest))
         {
-            RequestNoLongerActual(currRequest);
+            RequestNoLongerActual(currRequest, this);
             return;
         }
         else if (request.Direction != currRequest.Direction)
