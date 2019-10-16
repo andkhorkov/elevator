@@ -6,18 +6,15 @@ public class ElevatorCreator : MonoBehaviour
 {
     [SerializeField] private int elevatorSpeed = 400;
     [SerializeField] private int numFloors = 6;
-    [SerializeField] private int numElevators = 1;
     [SerializeField] private float ceilToDoorOffset = 10;
     [SerializeField] private float ceilWidth = 10;
     [SerializeField] private Vector2 desiredResolution = new Vector2(2880, 1800);
     [SerializeField] private SpriteRenderer wall;
 
-    public static event Action<ElevatorController> ElevatorInitialized = delegate {  };
+    private int numElevators = 1;
 
     private void Start()
     {
-        SetCameraSize();
-
         var origin = Camera.main.ScreenToWorldPoint(Vector3.zero);
         origin.z = 0;
         var floorPositions = BuildFloors(origin);
@@ -26,12 +23,13 @@ public class ElevatorCreator : MonoBehaviour
 
     private Vector3[] BuildFloors(Vector3 origin)
     {
+        wall.size = new Vector2(desiredResolution.y * Camera.main.aspect, desiredResolution.y);
         var ceiling = Resources.Load<SpriteRenderer>("ceiling");
         var floorPrefab = Resources.Load<Floor.FloorController>("floorController");
         var doorSize = floorPrefab.DoorController.DoorSize;
         var floorPositions = new Vector3[numFloors + 1];
-        var offset = desiredResolution.x * 0.5f * Vector3.right;
-        var ceilSize = new Vector2(desiredResolution.x, ceilWidth);
+        var offset = wall.size.x * 0.5f * Vector3.right;
+        var ceilSize = new Vector2(wall.size.x, ceilWidth);
         var firstFloorPos = origin + offset;
 
         for (int i = 0; i < floorPositions.Length; ++i)
@@ -83,26 +81,10 @@ public class ElevatorCreator : MonoBehaviour
         }
     }
 
-    private void SetCameraSize()
-    {
-        float nativeToRealRatio = desiredResolution.x / Screen.width;
-        Camera.main.orthographicSize = 0.5f * nativeToRealRatio * Screen.height;
-        wall.size = new Vector2(wall.size.x, wall.size.x / Camera.main.aspect);
-    }
-
     //void OnDrawGizmos()
     //{
     //    Gizmos.color = Color.red;
     //    Gizmos.DrawSphere(Camera.main.ScreenToWorldPoint(Vector3.zero), 100);
     //}
 
-    void Update()
-    {
-        float unitsPerPixel = 2880f / Screen.width;
-
-        float desiredHalfHeight = 0.5f * unitsPerPixel * Screen.height;
-
-        Camera.main.orthographicSize = desiredHalfHeight;
-
-    }
 }
