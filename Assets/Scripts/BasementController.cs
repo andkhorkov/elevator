@@ -26,8 +26,6 @@ public class BasementController : MonoBehaviour
 
     private void Start()
     {
-        SetCameraSize();
-
         var origin = Camera.main.ScreenToWorldPoint(Vector3.zero);
         origin.z = 0;
         var floorPositions = BuildCeilings(origin);
@@ -36,12 +34,13 @@ public class BasementController : MonoBehaviour
 
     private Vector3[] BuildCeilings(Vector3 origin)
     {
+        wall.size = new Vector2(desiredResolution.y * Camera.main.aspect, desiredResolution.y);
         var ceiling = Resources.Load<SpriteRenderer>("ceiling");
         var floorPrefab = Resources.Load<FloorController>("floorController");
         var doorSize = floorPrefab.DoorController.DoorSize;
         var floorPositions = new Vector3[numFloors + 1];
-        var offset = desiredResolution.x * 0.5f * Vector3.right;
-        var ceilSize = new Vector2(desiredResolution.x, ceilWidth);
+        var offset = wall.size.x * 0.5f * Vector3.right;
+        var ceilSize = new Vector2(wall.size.x, ceilWidth);
         var firstFloorPos = origin + offset;
 
         for (int i = 0; i < floorPositions.Length; ++i)
@@ -95,13 +94,6 @@ public class BasementController : MonoBehaviour
         }
     }
 
-    private void SetCameraSize()
-    {
-        float nativeToRealRatio = desiredResolution.x / Screen.width;
-        Camera.main.orthographicSize = 0.5f * nativeToRealRatio * Screen.height;
-        wall.size = new Vector2(wall.size.x, wall.size.x / Camera.main.aspect);
-    }
-
     public void AddRequest(int desiredFloorNum, ElevatorDirection desiredDirection)
     {
         var request = new ElevatorController.Request(desiredDirection, desiredFloorNum);
@@ -146,22 +138,6 @@ public class BasementController : MonoBehaviour
 
         otherElevators.Sort((a, b) => a.RequestsCount.CompareTo(b.RequestsCount));
         return otherElevators[0];
-    }
-
-    //void OnDrawGizmos()
-    //{
-    //    Gizmos.color = Color.red;
-    //    Gizmos.DrawSphere(Camera.main.ScreenToWorldPoint(Vector3.zero), 100);
-    //}
-
-    void Update()
-    {
-        float unitsPerPixel = 2880f / Screen.width;
-
-        float desiredHalfHeight = 0.5f * unitsPerPixel * Screen.height;
-
-        Camera.main.orthographicSize = desiredHalfHeight;
-
     }
 
     public class ElevatorComparer : IComparer<ElevatorController>
