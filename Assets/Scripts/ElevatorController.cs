@@ -327,7 +327,6 @@ public class ElevatorController : MonoBehaviour
         public abstract void Update();
         public abstract void OnEnter();
         public abstract void OnLeave();
-        public abstract void AddRequest(Request request);
     }
 
     public class MovingState : State
@@ -349,11 +348,6 @@ public class ElevatorController : MonoBehaviour
         public override void OnLeave()
         {
         }
-
-        public override void AddRequest(Request request)
-        {
-            
-        }
     }
 
     public class IdleState : State
@@ -373,11 +367,6 @@ public class ElevatorController : MonoBehaviour
 
         public override void OnLeave()
         {
-        }
-
-        public override void AddRequest(Request request)
-        {
-            
         }
     }
 
@@ -400,57 +389,6 @@ public class ElevatorController : MonoBehaviour
         public override void OnLeave()
         {
             elevator.CloseDoors();
-        }
-
-        public override void AddRequest(Request request)
-        {
-            if (request.Equals(elevator.currRequest))
-            {
-                Debug.Log($"{GetType().Name}, 1");
-                elevator.RequestNoLongerActual.Invoke(elevator.currRequest);
-                return;
-            }
-
-            if (request.Direction != elevator.currRequest.Direction)
-            {
-                Debug.Log($"{GetType().Name}, 2");
-                elevator.currOppositeRequests.Enqueue(request);
-                return;
-            }
-
-            if (elevator.movingDirection != request.Direction)
-            {
-                Debug.Log($"{GetType().Name}, 3");
-                elevator.currRequests.Enqueue(request);
-                return;
-            }
-
-            switch (elevator.movingDirection)
-            {
-                case ElevatorDirection.up when request.FloorNum > elevator.currFloorNum:
-                    Debug.Log($"{GetType().Name}, 4");
-                    elevator.currRequests.Enqueue(request);
-                    return;
-                case ElevatorDirection.down when request.FloorNum < elevator.currFloorNum:
-                    Debug.Log($"{GetType().Name}, 5");
-                    elevator.currRequests.Enqueue(request);
-                    return;
-                default:
-                {
-                    if (elevator.currRequests.Count > 0)
-                    {
-                        Debug.Log($"{GetType().Name}, 6");
-                        elevator.currDelayedRequests.Enqueue(request);
-                    }
-                    else
-                    {
-                        Debug.Log($"{GetType().Name}, 7");
-                        elevator.currRequests.Enqueue(request);
-                    }
-
-                    break;
-                }
-            }
         }
     }
 }
