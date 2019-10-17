@@ -48,6 +48,11 @@ public class ElevatorController : MonoBehaviour
         {
             return req.GetHashCode();
         }
+
+        public override string ToString()
+        {
+            return $"{FloorNum} : {Direction}";
+        }
     }
 
     private CabinController cabinController;
@@ -68,14 +73,12 @@ public class ElevatorController : MonoBehaviour
     private PriorityUQueue<Request> currRequests;
     private PriorityUQueue<Request> currOppositeRequests;
     private PriorityUQueue<Request> currDelayedRequests;
-    //when doors are closing we dequeuing current pq, but we don't want to dequeue the task that become first while current task is not removed yet. Some other task might want to go to the peak of the heap.
-    private Queue<Request> tempBufferRequests = new Queue<Request>();  
     private Request currRequest;
     private int currFloorNum;
     private int nextFloorNum;
 
-    public int RequestsCount => currRequests.Count + currOppositeRequests.Count + currDelayedRequests.Count +
-                                tempBufferRequests.Count;
+    public int Id { get; private set; }
+    public int RequestsCount => currRequests.Count + currOppositeRequests.Count + currDelayedRequests.Count;
     public bool IsIdle => currentState == idleState;
     public ElevatorDirection MovingDirection => movingDirection;
     public int CurrFloorNum => currFloorNum;
@@ -91,13 +94,14 @@ public class ElevatorController : MonoBehaviour
 
     public static event Action<Request, ElevatorController> RequestNoLongerActual = delegate { };
 
-    public void Initialize(Dictionary<int, FloorController> floors, CabinController cabinController, float speed)
+    public void Initialize(Dictionary<int, FloorController> floors, CabinController cabinController, float speed, int id)
     {
         this.speed = speed;
-        Floors = floors;
         this.cabinController = cabinController;
+        Floors = floors;
         cabin = cabinController.transform;
         currFloorNum = 1;
+        Id = id;
 
         idleState = new IdleState(this);
         movingState = new MovingState(this);
@@ -137,8 +141,15 @@ public class ElevatorController : MonoBehaviour
 
     private void OnReachGoalFloor()
     {
+        currRequests.Dequeue();
         SetState(doorsCycleState);
+        PrintElevatorState();
         NotifyFloor(currRequest);
+    }
+
+    private void PrintElevatorState()
+    {
+        Debug.Log($"elevator #{Id}, floor: {currFloorNum}, currentQueue: {currRequests.Print()} || oppositeQueue: {currOppositeRequests.Print()} || delayedQueue: {currDelayedRequests.Print()}");
     }
 
     private void NotifyFloor(Request request)
@@ -154,47 +165,10 @@ public class ElevatorController : MonoBehaviour
         floorController.ResetHereSign();
     }
 
-    private void ReturnTempRequestsBack()
-    {
-        while (tempBufferRequests.Count > 0)
-        {
-            var request = tempBufferRequests.Dequeue();
-
-            if (request.FloorNum == currFloorNum && (movingDirection == request.Direction || currRequests.Count == 0))
-            {
-                RequestNoLongerActual(request, this);
-                continue;
-            }
-
-            currRequests.Enqueue(request);
-        }
-    }
-
     private void JumpToNextRequest()
     {
-        if(currRequests.Count > 0)
+        if (currRequests.Count == 0)
         {
-            var request = currRequests.Dequeue();
-            RequestNoLongerActual.Invoke(request, this); 
-        }
-
-        if (currRequests.Count > 0)
-        {
-            ReturnTempRequestsBack();
-        }
-
-        if(currRequests.Count == 0)
-        {
-            var dir = currRequest.Direction;
-            var floor = currRequest.FloorNum;
-            var symmetricRequest = new Request(dir == ElevatorDirection.up ? ElevatorDirection.down : ElevatorDirection.up, floor);
-
-            if (currRequests.Count == 0 && currOppositeRequests.Contains(symmetricRequest))
-            {
-                currOppositeRequests.Remove(symmetricRequest);
-                RequestNoLongerActual.Invoke(symmetricRequest, this);
-            }
-
             if (currOppositeRequests.Count > 0)
             {
                 currRequests = currOppositeRequests;
@@ -203,8 +177,20 @@ public class ElevatorController : MonoBehaviour
             {
                 currRequests = currDelayedRequests;
             }
+            else
+            {
+                SetState(idleState);
+                return;
+            }
+        }
 
-            ReturnTempRequestsBack();                 
+        currRequest = currRequests.Peek;
+
+        if (currRequest.FloorNum == currFloorNum)
+        {
+            RequestNoLongerActual(currRequest, this);
+            currRequests.Dequeue();
+            JumpToNextRequest();
 
             if (currRequests.Count == 0)
             {
@@ -213,10 +199,10 @@ public class ElevatorController : MonoBehaviour
             }
         }
 
-        currRequest = currRequests.Peek;
         SetState(movingState);
     }
 
+    //todo: make it not that scary
     public void AddRequest(int desiredFloorNum, ElevatorDirection desiredDirection)
     {
         if (desiredDirection == ElevatorDirection.none) // from cabin btn
@@ -226,7 +212,7 @@ public class ElevatorController : MonoBehaviour
 
         var request = new Request(desiredDirection, desiredFloorNum);
 
-        if (currentState == idleState)
+        if (IsIdle)
         {
             if (request.Direction == ElevatorDirection.up)
             {
@@ -242,41 +228,44 @@ public class ElevatorController : MonoBehaviour
             }
 
             currRequests.Enqueue(request);
-            currRequest = currRequests.Peek;
+            currRequest = request;
             SetState(movingState);
-        }
-        else if (currentState == doorsCycleState)
-        {
-            tempBufferRequests.Enqueue(request);
+            PrintElevatorState();
             return;
         }
-        else if (request.Equals(currRequest))
+
+        if (request.Equals(currRequest))
         {
-            RequestNoLongerActual(currRequest, this);
-            return;
+            RequestNoLongerActual.Invoke(currRequest, this);
         }
         else if (request.Direction != currRequest.Direction)
         {
             currOppositeRequests.Enqueue(request);
         }
-        else if (movingDirection != desiredDirection)
+        else if (movingDirection != request.Direction)
         {
             currRequests.Enqueue(request);
         }
-        else if ((desiredFloorNum - currFloorNum) * (movingDirection == ElevatorDirection.up ? 1 : -1) > 0) // could be more readable predicate..
+        else if ((movingDirection == ElevatorDirection.up ? 1 : -1) * (request.FloorNum - currFloorNum) > 0)
         {
             currRequests.Enqueue(request);
-        }
-        else if (currRequests.Count > 0)
-        {
-            currDelayedRequests.Enqueue(request);
         }
         else
         {
-            currRequests.Enqueue(request);
+            currDelayedRequests.Enqueue(request);
         }
 
-        currRequest = currRequests.Peek;
+        if (IsIdle)
+        {
+            return;
+        }
+
+        if (currentState != doorsCycleState)
+        {
+            currRequest = currRequests.Peek;
+        }
+
+        PrintElevatorState();
     }
 
     private void OnStartMoving()

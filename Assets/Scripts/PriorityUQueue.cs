@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 public class PriorityUQueue<T> where T : IComparable<T>
 {
@@ -26,6 +27,42 @@ public class PriorityUQueue<T> where T : IComparable<T>
         data.Remove(item);
         set.Remove(item);
         Heapify(0, data.Count - 1);
+    }
+
+    public string Print()
+    {
+        if (data.Count == 0)
+        {
+            return string.Empty;
+        }
+
+        var q = new Queue<T>();
+        q.Enqueue(data[0]);
+        var index = 0;
+        var sb = new StringBuilder();
+
+        while (q.Count > 0)
+        {
+            var node = q.Dequeue();
+            sb.Append($"{node.ToString()}, ");
+
+            var l = index * 2 + 1;
+            var r = index * 2 + 2;
+
+            if (l < data.Count)
+            {
+                q.Enqueue(data[l]);
+            }
+
+            if (r < data.Count)
+            {
+                q.Enqueue(data[r]);
+            }
+
+            ++index;
+        }
+
+        return sb.ToString();
     }
 
     public void Enqueue(T item)

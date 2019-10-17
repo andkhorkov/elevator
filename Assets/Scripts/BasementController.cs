@@ -89,7 +89,7 @@ public class BasementController : MonoBehaviour
             cabin.name = $"cabin{i + 1}";
             cabin.Initialize(elevatorController);
             
-            elevatorController.Initialize(floors, cabin, elevatorSpeed);
+            elevatorController.Initialize(floors, cabin, elevatorSpeed, elevatorNum);
             elevators[i] = elevatorController;
         }
     }
@@ -138,13 +138,5 @@ public class BasementController : MonoBehaviour
 
         otherElevators.Sort((a, b) => a.RequestsCount.CompareTo(b.RequestsCount));
         return otherElevators[0];
-    }
-
-    public class ElevatorComparer : IComparer<ElevatorController>
-    {
-        public int Compare(ElevatorController x, ElevatorController y)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

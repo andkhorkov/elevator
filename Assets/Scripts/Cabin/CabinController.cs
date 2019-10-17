@@ -40,7 +40,7 @@ namespace Cabin
             IsVisible = show;
         }
 
-        private void OnGoalFloorReached(ElevatorController.Request request, ElevatorController elevator)
+        public void OnGoalFloorReached(ElevatorController.Request request, ElevatorController elevator)
         {
             if (this.elevator != elevator)
             {
