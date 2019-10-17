@@ -24,7 +24,7 @@ namespace Tests
 
             cam.AddComponent<Camera>();
             world = Object.Instantiate(Resources.Load<GameObject>("world"));
-            Time.timeScale = 10;
+            Time.timeScale = 100;
         }
 
         private void OnElevatorReachGoalFloor(ElevatorController.Request request)
@@ -233,6 +233,8 @@ namespace Tests
 
             yield return new AwaitUntilElevatorIsIdle(elevator);
 
+            Print();
+
             Assert.AreEqual(new List<int>() { 5, 4, 3 }, visitedFloors);
         }
 
@@ -252,10 +254,10 @@ namespace Tests
             elevator.Floors[4].BtnUp.OnClick();
             yield return new WaitForSeconds(1);
             yield return new AwaitUntilElevatorReachFloor(3, elevator);
-            elevator.Floors[6].BtnUp.OnClick(); // on 3rd floor he lied end went to 6th (emulated cabin btn)
+            elevator.Floors[6].BtnDown.OnClick(); // on 3rd floor he lied end went to 6th (emulated cabin btn)
 
             yield return new AwaitUntilElevatorIsIdle(elevator);
-
+            Print();
             Assert.AreEqual(new List<int>() { 6, 3, 2, 4, 6, 5 }, visitedFloors);
         }
 
