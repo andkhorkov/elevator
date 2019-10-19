@@ -12,6 +12,7 @@ namespace Floor
         [SerializeField] private FloorController floorController;
 
         private int isOpened;
+        private int reset;
         private float currentTime;
         private int currentTaskIndex;
 
@@ -22,6 +23,7 @@ namespace Floor
         private void Awake()
         {
             isOpened = Animator.StringToHash("isOpened");
+            reset = Animator.StringToHash("reset");
 
             doorCycleTasks = new DelayedTask[3]
             {
@@ -29,6 +31,20 @@ namespace Floor
                 new TimeDelayedTask(OnDoorDelayTimePassed, cycleTime), 
                 new AnimationTransitionAwaitingTask(OnDoorsClosed, "doorsClosed", animator)
             };
+
+            GameController.Restart += OnRestart;
+        }
+
+        private void OnDestroy()
+        {
+            GameController.Restart -= OnRestart;
+        }
+
+        private void OnRestart()
+        {
+            animator.SetBool(isOpened, false);
+            animator.SetTrigger(reset);
+            currentTaskIndex = 0;
         }
 
         private void ToNextTask()

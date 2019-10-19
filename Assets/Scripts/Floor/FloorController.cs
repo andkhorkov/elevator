@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using Pool;
+using UnityEngine;
 
 namespace Floor
 {
-    public class FloorController : MonoBehaviour
+    public class FloorController : PoolObject
     {
         [SerializeField] private DoorController doorController;
         [SerializeField] private FloorDisplay floorDisplay;
@@ -31,6 +32,11 @@ namespace Floor
             elevator.FloorChanged += OnFloorChanged;
             elevator.EnteredIdle += OnEnteredIdle;
             elevator.DirectionChanged += OnDirectionChanged;
+        }
+
+        private void Awake()
+        {
+            GameController.Restart += OnRestart;
             ElevatorController.GoalFloorReached += OnGoalFloorReached;
             ElevatorController.RequestNoLongerActual += OnRequestNoLongerActual;
         }
@@ -42,6 +48,16 @@ namespace Floor
             elevator.DirectionChanged -= OnDirectionChanged;
             ElevatorController.GoalFloorReached -= OnGoalFloorReached;
             ElevatorController.RequestNoLongerActual -= OnRequestNoLongerActual;
+            GameController.Restart -= OnRestart;
+        }
+
+        private void OnRestart()
+        {
+            ReturnObject();
+
+            btnUp.SetDefaultColor();
+            btnDown.SetDefaultColor();
+            floorDisplay.Reset();
         }
 
         public void OnDirectionChanged(ElevatorDirection direction)
@@ -111,13 +127,34 @@ namespace Floor
                 return;
             }
 
-            btnUp.OnGoalFloorReached(request.Direction);
-            btnDown.OnGoalFloorReached(request.Direction);
+            if (request.Direction == ElevatorDirection.up)
+            {
+                btnUp.SetDefaultColor();
+            }
+
+            if (request.Direction == ElevatorDirection.down)
+            {
+                btnDown.SetDefaultColor();
+            }
         }
 
-        public void ResetHereSign()
+        public void OnGoalFloorReached()
         {
             floorDisplay.OnGoalFloorReached();
+        }
+
+        public override void OnTakenFromPool()
+        {
+        }
+
+        public override void OnReturnedToPool()
+        {
+            transform.position = Vector3.right * 10000;
+            name = "pooledFloor";
+        }
+
+        public override void OnPreWarmed()
+        {
         }
     }
 }

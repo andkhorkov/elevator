@@ -4,7 +4,8 @@ using UnityEngine;
 public class GameController : MonoBehaviour
 {
     [SerializeField] private BasementController basement;
-    [SerializeField] private UIController uiController;
+
+    private UIController uiController;
 
     private int floorsAmount = 6;
     private int elevatorsAmount = 1;
@@ -26,6 +27,8 @@ public class GameController : MonoBehaviour
 
     private void Awake()
     {
+        uiController = FindObjectOfType<UIController>(); //lazyness, this should be referenced in some container object, or DiContainer
+
         uiController.ElevatorsAmountInput.onEndEdit.AddListener(OnElevatorsCountChanged);
         uiController.FloorsAmountInput.onEndEdit.AddListener(OnFloorsCountChanged);
         uiController.RestartBtn.onClick.AddListener(OnRestartClicked);
@@ -71,6 +74,22 @@ public class GameController : MonoBehaviour
                 Time.timeScale = 0;
                 isPaused = true;
             }
+        }
+    }
+
+    private void Pause(bool activate)
+    {
+        if (activate)
+        {
+            uiController.SetActive(true);
+            Time.timeScale = 0;
+            isPaused = false;
+        }
+        else
+        {
+            uiController.SetActive(false);
+            Time.timeScale = defaultTimeScale;
+            isPaused = false;
         }
     }
 
@@ -148,10 +167,12 @@ public class GameController : MonoBehaviour
             return;
         }
 
+        Restart.Invoke();
+
         basement.Restart(elevatorsAmount, floorsAmount);
         isPlaying = true;
-
-        Restart.Invoke();
+        
+        Pause(false);
     }
 
     //todo: other fancy stuff here

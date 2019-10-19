@@ -36,6 +36,12 @@ namespace Floor
             sprDirectionCg.alpha = 0;
         }
 
+        public void Reset()
+        {
+            sprHereCg.alpha = 0;
+            sprDirectionCg.alpha = 0;
+        }
+
         public void OnDirectionChanged(ElevatorDirection direction)
         {
             sprHereCg.alpha = 0;

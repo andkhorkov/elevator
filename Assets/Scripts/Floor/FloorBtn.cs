@@ -22,13 +22,8 @@ namespace Floor
             floor.OnButtonClicked(direction);
         }
 
-        public void OnGoalFloorReached(ElevatorDirection direction)
+        public void SetDefaultColor()
         {
-            if (this.direction != direction)
-            {
-                return;
-            }
-
             sprBtn.SprRenderer.color = defaultColor;
         }
     }

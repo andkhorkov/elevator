@@ -113,7 +113,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   basement: {fileID: 1601534498914521271}
-  uiController: {fileID: 0}
 --- !u!1 &1601534498904379825
 GameObject:
   m_ObjectHideFlags: 0
@@ -252,6 +251,10 @@ MonoBehaviour:
   desiredResolution: {x: 2880, y: 1800}
   wall: {fileID: 1601534498904379839}
   gameController: {fileID: 1783446215029647442}
+  ceilingPrefabPath: ceiling
+  floorPrefabPath: floorController
+  cabinPrefabPath: elevatorCabin
+  elevatorPrefabPath: elevator
 --- !u!223 &1601534498914521270
 Canvas:
   m_ObjectHideFlags: 0

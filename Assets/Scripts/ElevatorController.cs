@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Cabin;
 using Floor;
+using Pool;
 using UnityEngine;
 
 public enum ElevatorDirection
@@ -11,7 +12,7 @@ public enum ElevatorDirection
     none
 }
 
-public class ElevatorController : MonoBehaviour
+public class ElevatorController : PoolObject
 {
     public struct Request : IComparable<Request>, IEqualityComparer<Request>
     {
@@ -94,8 +95,32 @@ public class ElevatorController : MonoBehaviour
 
     public static event Action<Request, ElevatorController> RequestNoLongerActual = delegate { };
 
+    private void Awake()
+    {
+        GameController.Restart += OnRestart;
+
+        idleState = new IdleState(this);
+        movingState = new MovingState(this);
+        doorsCycleState = new DoorsCycleState(this);
+    }
+
+    private void OnDestroy()
+    {
+        GameController.Restart -= OnRestart;
+    }
+
+    private void OnRestart()
+    {
+        ReturnObject();
+    }
+
     public void Initialize(Dictionary<int, FloorController> floors, CabinController cabinController, float speed, int id)
     {
+        downRequests.Clear();
+        upRequests.Clear();
+        downDelayedRequests.Clear();
+        upDelayedRequests.Clear();
+
         this.speed = speed;
         this.cabinController = cabinController;
         Floors = floors;
@@ -103,9 +128,6 @@ public class ElevatorController : MonoBehaviour
         currFloorNum = 1;
         Id = id;
 
-        idleState = new IdleState(this);
-        movingState = new MovingState(this);
-        doorsCycleState = new DoorsCycleState(this);
         SetState(idleState);
 
         FloorChanged.Invoke(currFloorNum);
@@ -162,7 +184,7 @@ public class ElevatorController : MonoBehaviour
             return;
         }
 
-        floorController.ResetHereSign();
+        floorController.OnGoalFloorReached();
     }
 
     private void JumpToNextRequest()
@@ -421,5 +443,18 @@ public class ElevatorController : MonoBehaviour
         {
             elevator.CloseDoors();
         }
+    }
+
+    public override void OnTakenFromPool()
+    {
+    }
+
+    public override void OnReturnedToPool()
+    {
+        transform.position = Vector3.right * 10000;
+    }
+
+    public override void OnPreWarmed()
+    {
     }
 }

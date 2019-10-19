@@ -22,6 +22,12 @@ public class PriorityUQueue<T> where T : IComparable<T>
         return set.Contains(item);
     }
 
+    public void Clear()
+    {
+        data.Clear();
+        set.Clear();
+    }
+
     public void Remove(T item)
     {
         data.Remove(item);

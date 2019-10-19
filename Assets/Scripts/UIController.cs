@@ -57,20 +57,6 @@ public class UIController : MonoBehaviour
 
     public void SetActive(bool activate)
     {
-        if (activate)
-        {
-            IsOnScreen = true;
-            cg.alpha = 1;
-        }
-        else
-        {
-            IsOnScreen = false;
-            cg.alpha = 0;
-        }
-    }
-
-    public void Toggle()
-    {
-        SetActive(!IsOnScreen);
+        cg.alpha = activate ? 1 : 0;
     }
 }

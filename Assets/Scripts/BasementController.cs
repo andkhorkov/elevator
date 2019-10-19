@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Cabin;
 using Floor;
+using Pool;
 using UnityEngine;
 
 public class BasementController : MonoBehaviour
@@ -13,6 +15,10 @@ public class BasementController : MonoBehaviour
     [SerializeField] private Vector2 desiredResolution = new Vector2(2880, 1800);
     [SerializeField] private SpriteRenderer wall;
     [SerializeField] private GameController gameController;
+    [SerializeField, AssetPathGetter] private string ceilingPrefabPath;
+    [SerializeField, AssetPathGetter] private string floorPrefabPath;
+    [SerializeField, AssetPathGetter] private string cabinPrefabPath;
+    [SerializeField, AssetPathGetter] private string elevatorPrefabPath;
 
     private List<ElevatorController> sameDirAndIdleElevators = new List<ElevatorController>();
     private List<ElevatorController> otherElevators = new List<ElevatorController>();
@@ -35,7 +41,6 @@ public class BasementController : MonoBehaviour
 
     private Vector3[] BuildCeilings(Vector3 origin, int floorsCount)
     {
-        var ceiling = Resources.Load<SpriteRenderer>("ceiling");
         var floorPrefab = Resources.Load<FloorController>("floorController");
         var doorSize = floorPrefab.DoorController.DoorSize;
         var floorPositions = new Vector3[floorsCount + 1];
@@ -46,9 +51,10 @@ public class BasementController : MonoBehaviour
         for (int i = 0; i < floorPositions.Length; ++i)
         {
             floorPositions[i] = firstFloorPos + Vector3.up * ((doorSize.y + ceilToDoorOffset) * i + ceilSize.y * (0.5f + i));
-            var ceilingSpr = Instantiate(ceiling, floorPositions[i], Quaternion.identity);
+            var ceilingSpr = PoolManager.GetObject<Ceiling>(ceilingPrefabPath);
+            ceilingSpr.SetOrientation(floorPositions[i], Quaternion.identity);
             ceilingSpr.transform.SetParent(transform);
-            ceilingSpr.size = ceilSize;
+            ceilingSpr.Spr.size = ceilSize;
             ceilingSpr.name = $"floor{i + 1}";
         }
 
@@ -59,21 +65,21 @@ public class BasementController : MonoBehaviour
     {
         elevators = new ElevatorController[elevatorsCount];
         var floorControllerPrefab = Resources.Load<FloorController>("floorController");
-        var cabinPrefab = Resources.Load<Cabin.CabinController>("elevatorCabin");
 
         for (int i = 0; i < elevatorsCount; i++)
         {
             var elevatorNum = i + 1;
-            var elevator = new GameObject($"elevator{elevatorNum}");
-            var elevatorController = elevator.AddComponent<ElevatorController>();
+            var elevatorController = PoolManager.GetObject<ElevatorController>(elevatorPrefabPath);
+            elevatorController.name = $"elevator{elevatorNum}";
             var elevatorPos = origin + (shaftOffset + shaftWidth * i) * Vector3.right;
-            elevator.transform.position = elevatorPos;
-            elevator.transform.SetParent(transform);
+            elevatorController.transform.position = elevatorPos;
+            elevatorController.transform.SetParent(transform);
             var floors = new Dictionary<int, FloorController>(floorsCount);
 
             for (int j = 0; j < floorsCount; j++)
             {
-                var floor = Instantiate(floorControllerPrefab, elevator.transform);
+                var floor = PoolManager.GetObject<FloorController>(floorPrefabPath);
+                floor.transform.SetParent(elevatorController.transform);
                 var floorNum = j + 1;
                 floor.transform.position = new Vector3(elevatorPos.x, floorPositions[j].y + 0.5f * ceilWidth);
                 floor.name = $"doors{floorNum}";
@@ -84,7 +90,8 @@ public class BasementController : MonoBehaviour
             floors[1].SwitchOffDownBtn();
             floors[floorsCount].SwitchOffUpBtn();
 
-            var cabin = Instantiate(cabinPrefab, elevator.transform);
+            var cabin = PoolManager.GetObject<CabinController>(cabinPrefabPath);
+            cabin.transform.SetParent(elevatorController.transform);
             cabin.transform.position = new Vector3(elevatorPos.x, floorPositions[0].y);
             cabin.name = $"cabin{i + 1}";
             cabin.Initialize(elevatorController);
