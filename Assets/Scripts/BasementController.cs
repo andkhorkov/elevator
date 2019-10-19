@@ -8,8 +8,6 @@ public class BasementController : MonoBehaviour
     [SerializeField] private int elevatorSpeed = 400;
     [SerializeField] private float shaftOffset = 800;
     [SerializeField] private float shaftWidth = 800;
-    //[SerializeField] private int numFloors = 6;
-    //[SerializeField] private int numElevators = 2;
     [SerializeField] private float ceilToDoorOffset = 10;
     [SerializeField] private float ceilWidth = 10;
     [SerializeField] private Vector2 desiredResolution = new Vector2(2880, 1800);
@@ -22,12 +20,11 @@ public class BasementController : MonoBehaviour
     private ElevatorController[] elevators;
     private Vector3 origin;
 
-    public static event Action<ElevatorController> ElevatorInitialized = delegate {  };
-
     private void Start()
     {
         origin = Camera.main.ScreenToWorldPoint(Vector3.zero);
         origin.z = 0;
+        wall.size = new Vector2(desiredResolution.y * Camera.main.aspect, desiredResolution.y);
     }
 
     public void Restart(int elevatorsCount, int floorsCount)
@@ -38,7 +35,6 @@ public class BasementController : MonoBehaviour
 
     private Vector3[] BuildCeilings(Vector3 origin, int floorsCount)
     {
-        wall.size = new Vector2(desiredResolution.y * Camera.main.aspect, desiredResolution.y);
         var ceiling = Resources.Load<SpriteRenderer>("ceiling");
         var floorPrefab = Resources.Load<FloorController>("floorController");
         var doorSize = floorPrefab.DoorController.DoorSize;

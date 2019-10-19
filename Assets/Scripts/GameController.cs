@@ -6,70 +6,121 @@ public class GameController : MonoBehaviour
     [SerializeField] private BasementController basement;
     [SerializeField] private UIController uiController;
 
-    private int floorsCount = 6;
-    private int elevatorsCount = 1;
+    private int floorsAmount = 6;
+    private int elevatorsAmount = 1;
 
-    private const int MAX_ELEVATORS = 3;
-    private const int MAX_FLOORS = 6;
+    private float defaultTimeScale;
+    private bool isPlaying; // could be a state machine instead
+    private bool isPaused;
 
-    public static event Action Initialized = delegate {  };
+    public const int DEFAULT_ELEVATORS_AMOUNT = 1;
+    public const int DEFAULT_FLOORS_AMOUNT = 6;
+    public const int MIN_ELEVATORS = 1;
+    public const int MIN_FLOORS = 2;
+    public const int MAX_ELEVATORS = 3;
+    public const int MAX_FLOORS = 6;
+
+    public static event Action<int> FloorsAmountChanged = delegate(int val) {  }; 
+    public static event Action<int> ElevatorsAmountChanged = delegate(int val) {  }; 
+    public static event Action Restart = delegate {  };
 
     private void Awake()
     {
-        uiController.ElevatorsCountInput.onValueChanged.AddListener(OnElevatorsCountChanged);
-        uiController.FloorsCountInput.onValueChanged.AddListener(OnFloorsCountChanged);
+        uiController.ElevatorsAmountInput.onEndEdit.AddListener(OnElevatorsCountChanged);
+        uiController.FloorsAmountInput.onEndEdit.AddListener(OnFloorsCountChanged);
         uiController.RestartBtn.onClick.AddListener(OnRestartClicked);
-
-        Initialized.Invoke();
+        uiController.ExitBtn.onClick.AddListener(OnExitClicked);
     }
 
     private void OnDestroy()
     {
-        uiController.ElevatorsCountInput.onValueChanged.RemoveAllListeners();
-        uiController.FloorsCountInput.onValueChanged.RemoveAllListeners();
+        uiController.ElevatorsAmountInput.onEndEdit.RemoveAllListeners();
+        uiController.FloorsAmountInput.onEndEdit.RemoveAllListeners();
         uiController.RestartBtn.onClick.RemoveAllListeners();
+        uiController.ExitBtn.onClick.RemoveAllListeners();
     }
 
-    public void SetNumElevators(int elevatorsCount) //for tests
+    private void Start()
     {
-        this.elevatorsCount = elevatorsCount;
+        SetDefaults();
+    }
+
+    private void OnExitClicked()
+    {
+        Application.Quit();
+    }
+
+    void Update()
+    {
+        if (!isPlaying)
+        {
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (isPaused)
+            {
+                uiController.SetActive(false);
+                Time.timeScale = defaultTimeScale;
+                isPaused = false;
+            }
+            else
+            {
+                uiController.SetActive(true);
+                Time.timeScale = 0;
+                isPaused = true;
+            }
+        }
+    }
+
+    private void SetDefaults()
+    {
+        defaultTimeScale = Time.timeScale;
+
+        floorsAmount = DEFAULT_FLOORS_AMOUNT;
+        elevatorsAmount = DEFAULT_ELEVATORS_AMOUNT;
+
+        ElevatorsAmountChanged.Invoke(elevatorsAmount);
+        FloorsAmountChanged.Invoke(floorsAmount);
+    }
+
+    public void SetNumElevators(int elevatorsAmount) //for tests
+    {
+        this.elevatorsAmount = elevatorsAmount;
     }
 
     private void OnElevatorsCountChanged(string value)
     {
-        var amount = Check(value, MAX_ELEVATORS);
+        var amount = Check(value);
 
         if (amount == -1)
         {
             return;
         }
 
-        elevatorsCount = amount;
+        elevatorsAmount = amount;
+        ElevatorsAmountChanged.Invoke(amount);
     }
 
     private void OnFloorsCountChanged(string value)
     {
-        var amount = Check(value, MAX_FLOORS);
+        var amount = Check(value);
 
         if (amount == -1)
         {
             return;
         }
 
-        floorsCount = amount;
+        floorsAmount = amount;
+        FloorsAmountChanged.Invoke(amount);
     }
 
-    private static int Check(string str, int max)
+    private static int Check(string str)
     {
         if (!int.TryParse(str, out var num))
         {
             Debug.LogError($"invalid input {str}");
-            return -1;
-        }
-
-        if (num < 1 || num > max)
-        {
-            Debug.LogError($"currently there is {max} maximum supported");
             return -1;
         }
 
@@ -78,7 +129,29 @@ public class GameController : MonoBehaviour
 
     private void OnRestartClicked()
     {
-        basement.Restart(elevatorsCount, floorsCount);
+        var goodToGo = true;
+
+        if (elevatorsAmount < 1 || elevatorsAmount > MAX_ELEVATORS)
+        {
+            Debug.LogError($"elevators amount should be 1 .. {MAX_ELEVATORS}");
+            goodToGo = false;
+        }
+
+        if (floorsAmount < 1 || floorsAmount > MAX_FLOORS)
+        {
+            Debug.LogError($"floors amount should be 1 .. {MAX_FLOORS}");
+            goodToGo = false;
+        }
+
+        if (!goodToGo)
+        {
+            return;
+        }
+
+        basement.Restart(elevatorsAmount, floorsAmount);
+        isPlaying = true;
+
+        Restart.Invoke();
     }
 
     //todo: other fancy stuff here

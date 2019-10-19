@@ -1,41 +1,76 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
 {
-    [SerializeField] private InputField elevatorsCountInput;
-    [SerializeField] private InputField floorsCountInput;
+    [SerializeField] private InputField elevatorsAmountInput;
+    [SerializeField] private InputField floorsAmountInput;
     [SerializeField] private Button restartBtn;
+    [SerializeField] private Button exitBtn;
+    [SerializeField] private Text lblElevatorsAmount;
+    [SerializeField] private Text lblFloorsAmount;
+    [SerializeField] private CanvasGroup cg;
 
-    private int maxElevators;
-    private int maxFloors;
+    public bool IsOnScreen { get; private set; }
 
-    public InputField ElevatorsCountInput => elevatorsCountInput;
-    public InputField FloorsCountInput => floorsCountInput;
+    public InputField ElevatorsAmountInput => elevatorsAmountInput;
+    public InputField FloorsAmountInput => floorsAmountInput;
     public Button RestartBtn => restartBtn;
+    public Button ExitBtn => exitBtn;
 
     private void Awake()
     {
-        GameController.Initialized += Initialize;
+        GameController.FloorsAmountChanged += OnFloorsAmountChanged;
+        GameController.ElevatorsAmountChanged += OnElevatorsAmountChanged;
+        GameController.Restart += OnRestart;
+        SetLimits();
     }
 
     private void OnDestroy()
     {
-        GameController.Initialized -= Initialize;
+        GameController.FloorsAmountChanged -= OnFloorsAmountChanged;
+        GameController.ElevatorsAmountChanged -= OnElevatorsAmountChanged;
+        GameController.Restart -= OnRestart;
     }
 
-    public void SetLimits(int maxElevators, int maxFloors)
+    private void SetLimits()
     {
-        this.maxElevators = maxElevators;
-        this.maxFloors = maxFloors;
+        lblElevatorsAmount.text += $"({GameController.MIN_ELEVATORS}..{GameController.MAX_ELEVATORS})";
+        lblFloorsAmount.text += $"({GameController.MIN_FLOORS}..{GameController.MAX_FLOORS})";
     }
 
-    private void Initialize()
+    //would be nice if Unity pass an instance of a UI element along with event, then I would not need to make method for each event in this case
+    private void OnElevatorsAmountChanged(int amount)
     {
-        
+        elevatorsAmountInput.text = amount.ToString();
     }
 
-    
+    private void OnFloorsAmountChanged(int amount)
+    {
+        floorsAmountInput.text = amount.ToString();
+    }
+
+    private void OnRestart()
+    {
+        SetActive(false);
+    }
+
+    public void SetActive(bool activate)
+    {
+        if (activate)
+        {
+            IsOnScreen = true;
+            cg.alpha = 1;
+        }
+        else
+        {
+            IsOnScreen = false;
+            cg.alpha = 0;
+        }
+    }
+
+    public void Toggle()
+    {
+        SetActive(!IsOnScreen);
+    }
 }
