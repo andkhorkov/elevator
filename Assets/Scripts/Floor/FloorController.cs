@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using Pool;
+using UnityEngine;
 
 namespace Floor
 {
-    public class FloorController : MonoBehaviour
+    public class FloorController : PoolObject
     {
         [SerializeField] private DoorController doorController;
         [SerializeField] private FloorDisplay floorDisplay;
@@ -35,6 +36,11 @@ namespace Floor
             ElevatorController.RequestNoLongerActual += OnRequestNoLongerActual;
         }
 
+        private void Awake()
+        {
+            GameController.Restart += OnRestart;
+        }
+
         private void OnDestroy()
         {
             elevator.FloorChanged -= OnFloorChanged;
@@ -42,6 +48,12 @@ namespace Floor
             elevator.DirectionChanged -= OnDirectionChanged;
             ElevatorController.GoalFloorReached -= OnGoalFloorReached;
             ElevatorController.RequestNoLongerActual -= OnRequestNoLongerActual;
+            GameController.Restart -= OnRestart;
+        }
+
+        private void OnRestart()
+        {
+            ReturnObject();
         }
 
         public void OnDirectionChanged(ElevatorDirection direction)
@@ -118,6 +130,20 @@ namespace Floor
         public void ResetHereSign()
         {
             floorDisplay.OnGoalFloorReached();
+        }
+
+        public override void OnTakenFromPool()
+        {
+        }
+
+        public override void OnReturnedToPool()
+        {
+            transform.position = Vector3.right * 10000;
+            name = "pooledFloor";
+        }
+
+        public override void OnPreWarmed()
+        {
         }
     }
 }

@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using Pool;
+using UnityEngine;
 
 namespace Cabin
 {
-    public class CabinController : MonoBehaviour
+    public class CabinController : PoolObject
     {
         [SerializeField] private CabinDisplay cabinDisplay;
         [SerializeField] private CanvasGroup cg;
@@ -12,6 +13,24 @@ namespace Cabin
         private ElevatorController elevator;
         private bool IsVisible;
         private static float maxDelta;
+
+        private void Awake()
+        {
+            GameController.Restart += OnRestart;
+        }
+
+        private void OnDestroy()
+        {
+            elevator.FloorChanged -= OnFloorChanged;
+            ElevatorController.GoalFloorReached -= OnGoalFloorReached;
+            ElevatorController.RequestNoLongerActual -= OnRequestNoLongerActual;
+            GameController.Restart -= OnRestart;
+        }
+
+        private void OnRestart()
+        {
+            ReturnObject();
+        }
 
         public void OnButtonClicked(int floorNum)
         {
@@ -26,13 +45,6 @@ namespace Cabin
             elevator.FloorChanged += OnFloorChanged;
             ElevatorController.GoalFloorReached += OnGoalFloorReached;
             ElevatorController.RequestNoLongerActual += OnRequestNoLongerActual;
-        }
-
-        private void OnDestroy()
-        {
-            elevator.FloorChanged -= OnFloorChanged;
-            ElevatorController.GoalFloorReached -= OnGoalFloorReached;
-            ElevatorController.RequestNoLongerActual -= OnRequestNoLongerActual;
         }
 
         public void ShowCabin(bool show)
@@ -73,6 +85,21 @@ namespace Cabin
         private void Update()
         {
             cg.alpha = Mathf.MoveTowards(cg.alpha, IsVisible ? 1 : 0, maxDelta * Time.deltaTime);
+        }
+
+        public override void OnTakenFromPool()
+        {
+            
+        }
+
+        public override void OnReturnedToPool()
+        {
+            transform.position = Vector3.right * 10000;
+            name = "pooledCabin";
+        }
+
+        public override void OnPreWarmed()
+        {
         }
     }
 }

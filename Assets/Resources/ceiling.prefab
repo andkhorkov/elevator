@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1836302832323604541}
   - component: {fileID: 1836302832323604540}
+  - component: {fileID: 2331178841603956213}
   m_Layer: 0
   m_Name: ceiling
   m_TagString: Untagged
@@ -80,3 +81,15 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &2331178841603956213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1836302832323604538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb19049f755cee847ae8769274d5da21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
