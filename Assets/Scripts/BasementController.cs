@@ -15,6 +15,9 @@ public class BasementController : MonoBehaviour
     [SerializeField] private Vector2 desiredResolution = new Vector2(2880, 1800);
     [SerializeField] private SpriteRenderer wall;
 
+    private List<ElevatorController> sameDirAndIdleElevators = new List<ElevatorController>();
+    private List<ElevatorController> otherElevators = new List<ElevatorController>();
+
     private ElevatorController[] elevators;
 
     public static event Action<ElevatorController> ElevatorInitialized = delegate {  };
@@ -94,46 +97,68 @@ public class BasementController : MonoBehaviour
         }
     }
 
-    public void AddRequest(int desiredFloorNum, ElevatorDirection desiredDirection)
+    public void AddRequest(int desiredFloorNum, ElevatorDirection desiredDirection, ElevatorController elevator)
     {
         var request = new ElevatorController.Request(desiredDirection, desiredFloorNum);
-        var elevator = GetClosestElevator(request);
+        var closestElevator = GetClosestElevator(request, elevator);
 
-        if (elevator == null)
+        if (closestElevator == null)
         {
             return;
         }
         
-        elevator.AddRequest(desiredFloorNum, desiredDirection);
+        closestElevator.AddRequest(desiredFloorNum, desiredDirection);
     }
 
-    private ElevatorController GetClosestElevator(ElevatorController.Request request)
+    private ElevatorController GetClosestElevator(ElevatorController.Request request, ElevatorController elevator)
     {
-        var sameDirAndIdleElevators = new List<ElevatorController>();
-        var otherElevators = new List<ElevatorController>();
+        sameDirAndIdleElevators.Clear();
+        otherElevators.Clear();
 
         for (int i = 0; i < elevators.Length; i++)
         {
-            var elevator = elevators[i];
+            var el = elevators[i];
 
-            if (elevator.IsRequestExists(request))
+            if (el.IsRequestExists(request))
             {
                 return null;
             }
 
-            if (elevator.IsIdle || elevator.MovingDirection == request.Direction)
+            if (el.IsIdle || el.MovingDirection == request.Direction)
             {
-                sameDirAndIdleElevators.Add(elevator);
+                sameDirAndIdleElevators.Add(el);
                 continue;
             }
 
-            otherElevators.Add(elevator);
+            otherElevators.Add(el);
         }
 
         if (sameDirAndIdleElevators.Count > 0)
         {
             sameDirAndIdleElevators.Sort((a, b) => Mathf.Abs(a.CurrFloorNum - request.FloorNum).CompareTo(Mathf.Abs(b.CurrFloorNum - request.FloorNum)));
-            return sameDirAndIdleElevators[0];
+
+            var bestElevator = sameDirAndIdleElevators[0];
+            var minDist = int.MaxValue;
+
+            for (int i = 0; i < sameDirAndIdleElevators.Count; ++i)
+            {
+                var el = sameDirAndIdleElevators[i];
+
+                if (el.CurrFloorNum != bestElevator.CurrFloorNum)
+                {
+                    break;
+                }
+
+                var dist = Mathf.Abs(el.Id - elevator.Id);
+
+                if (dist < minDist)
+                {
+                    minDist = dist;
+                    bestElevator = el;
+                }
+            }
+
+            return bestElevator;
         }
 
         otherElevators.Sort((a, b) => a.RequestsCount.CompareTo(b.RequestsCount));

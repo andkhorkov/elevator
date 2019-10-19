@@ -81,7 +81,7 @@ namespace Floor
 
         public void OnButtonClicked(ElevatorDirection direction)
         {
-            basement.AddRequest(Num, direction);
+            basement.AddRequest(Num, direction, elevator);
         }
 
         private void OnFloorChanged(int floorNum)
