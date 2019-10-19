@@ -48,6 +48,11 @@ public class ElevatorController : MonoBehaviour
         {
             return req.GetHashCode();
         }
+
+        public override string ToString()
+        {
+            return $"{FloorNum} : {Direction}";
+        }
     }
 
     private CabinController cabinController;
@@ -131,9 +136,13 @@ public class ElevatorController : MonoBehaviour
             }
 
             currRequests.Enqueue(request);
-            JumpToNextRequest();
+            currRequest = request;
+            SetState(movingState);
+            PrintElevatorState();
+            return;
         }
-        else if (request.Equals(currRequest))
+
+        if (request.Equals(currRequest))
         {
             RequestNoLongerActual.Invoke(currRequest);
         }
@@ -149,18 +158,21 @@ public class ElevatorController : MonoBehaviour
         {
             currRequests.Enqueue(request);
         }
-        else if (currRequests.Count > 0)
+        else
         {
             currDelayedRequests.Enqueue(request);
         }
-        else
+
+        if (IsIdle)
         {
-            currRequests.Enqueue(request);
+            return;
         }
 
         if (currentState != doorsCycleState)
         {
             currRequest = currRequests.Peek;
+
+            PrintElevatorState();
         }
     }
 
@@ -188,21 +200,14 @@ public class ElevatorController : MonoBehaviour
     private void OnReachGoalFloor()
     {
         currRequests.Dequeue();
-
-        if (currRequests.Count == 0)
-        {
-            if (currOppositeRequests.Count > 0)
-            {
-                currRequests = currOppositeRequests;
-            }
-            else if (currDelayedRequests.Count > 0)
-            {
-                currRequests = currDelayedRequests;
-            }
-        }
-
         SetState(doorsCycleState);
         GoalFloorReached.Invoke(currRequest);
+        PrintElevatorState();
+    }
+
+    private void PrintElevatorState()
+    {
+        Debug.Log($"floor: {currFloorNum}, current: {currRequests.Print()} || opposite: {currOppositeRequests.Print()} || delayed: {currDelayedRequests.Print()}");
     }
 
     private void JumpToNextRequest()
@@ -231,7 +236,12 @@ public class ElevatorController : MonoBehaviour
             RequestNoLongerActual(currRequest);
             currRequests.Dequeue();
             JumpToNextRequest();
-            return;
+
+            if (currRequests.Count == 0)
+            {
+                SetState(idleState);
+                return;
+            }
         }
 
         SetState(movingState);
