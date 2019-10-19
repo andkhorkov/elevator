@@ -8,40 +8,41 @@ public class BasementController : MonoBehaviour
     [SerializeField] private int elevatorSpeed = 400;
     [SerializeField] private float shaftOffset = 800;
     [SerializeField] private float shaftWidth = 800;
-    [SerializeField] private int numFloors = 6;
-    [SerializeField] private int numElevators = 2;
+    //[SerializeField] private int numFloors = 6;
+    //[SerializeField] private int numElevators = 2;
     [SerializeField] private float ceilToDoorOffset = 10;
     [SerializeField] private float ceilWidth = 10;
     [SerializeField] private Vector2 desiredResolution = new Vector2(2880, 1800);
     [SerializeField] private SpriteRenderer wall;
+    [SerializeField] private GameController gameController;
 
     private List<ElevatorController> sameDirAndIdleElevators = new List<ElevatorController>();
     private List<ElevatorController> otherElevators = new List<ElevatorController>();
 
     private ElevatorController[] elevators;
+    private Vector3 origin;
 
     public static event Action<ElevatorController> ElevatorInitialized = delegate {  };
 
-    public void SetNumElevators(int numElevators) //for tests
-    {
-        this.numElevators = numElevators;
-    }
-
     private void Start()
     {
-        var origin = Camera.main.ScreenToWorldPoint(Vector3.zero);
+        origin = Camera.main.ScreenToWorldPoint(Vector3.zero);
         origin.z = 0;
-        var floorPositions = BuildCeilings(origin);
-        BuildElevators(floorPositions, origin);
     }
 
-    private Vector3[] BuildCeilings(Vector3 origin)
+    public void Restart(int elevatorsCount, int floorsCount)
+    {
+        var floorPositions = BuildCeilings(origin, floorsCount);
+        BuildElevators(floorPositions, origin, elevatorsCount, floorsCount);
+    }
+
+    private Vector3[] BuildCeilings(Vector3 origin, int floorsCount)
     {
         wall.size = new Vector2(desiredResolution.y * Camera.main.aspect, desiredResolution.y);
         var ceiling = Resources.Load<SpriteRenderer>("ceiling");
         var floorPrefab = Resources.Load<FloorController>("floorController");
         var doorSize = floorPrefab.DoorController.DoorSize;
-        var floorPositions = new Vector3[numFloors + 1];
+        var floorPositions = new Vector3[floorsCount + 1];
         var offset = wall.size.x * 0.5f * Vector3.right;
         var ceilSize = new Vector2(wall.size.x, ceilWidth);
         var firstFloorPos = origin + offset;
@@ -58,13 +59,13 @@ public class BasementController : MonoBehaviour
         return floorPositions;
     }
 
-    private void BuildElevators(Vector3[] floorPositions, Vector3 origin)
+    private void BuildElevators(Vector3[] floorPositions, Vector3 origin, int elevatorsCount, int floorsCount)
     {
-        elevators = new ElevatorController[numElevators];
+        elevators = new ElevatorController[elevatorsCount];
         var floorControllerPrefab = Resources.Load<FloorController>("floorController");
         var cabinPrefab = Resources.Load<Cabin.CabinController>("elevatorCabin");
 
-        for (int i = 0; i < numElevators; i++)
+        for (int i = 0; i < elevatorsCount; i++)
         {
             var elevatorNum = i + 1;
             var elevator = new GameObject($"elevator{elevatorNum}");
@@ -72,9 +73,9 @@ public class BasementController : MonoBehaviour
             var elevatorPos = origin + (shaftOffset + shaftWidth * i) * Vector3.right;
             elevator.transform.position = elevatorPos;
             elevator.transform.SetParent(transform);
-            var floors = new Dictionary<int, FloorController>(numFloors);
+            var floors = new Dictionary<int, FloorController>(floorsCount);
 
-            for (int j = 0; j < numFloors; j++)
+            for (int j = 0; j < floorsCount; j++)
             {
                 var floor = Instantiate(floorControllerPrefab, elevator.transform);
                 var floorNum = j + 1;
@@ -85,7 +86,7 @@ public class BasementController : MonoBehaviour
             }
 
             floors[1].SwitchOffDownBtn();
-            floors[numFloors].SwitchOffUpBtn();
+            floors[floorsCount].SwitchOffUpBtn();
 
             var cabin = Instantiate(cabinPrefab, elevator.transform);
             cabin.transform.position = new Vector3(elevatorPos.x, floorPositions[0].y);

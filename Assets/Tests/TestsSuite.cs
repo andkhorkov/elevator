@@ -10,7 +10,7 @@ namespace Tests
 {
     public class TestsSuite
     {
-        private GameObject world;
+        private GameController world;
         private ElevatorController elevator;
         private List<int> visitedFloors = new List<int>();
 
@@ -23,9 +23,9 @@ namespace Tests
             };
 
             cam.AddComponent<Camera>();
-            world = Object.Instantiate(Resources.Load<GameObject>("world"));
+            world = Object.Instantiate(Resources.Load<GameController>("world"));
             var basement = world.GetComponentInChildren<BasementController>();
-            basement.SetNumElevators(1);
+            world.SetNumElevators(1);
             Time.timeScale = 10;
         }
 
