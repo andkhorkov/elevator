@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Elevator;
 using NUnit.Framework;
 using Pool;
 using UnityEngine;
@@ -32,7 +33,7 @@ namespace Tests
             gameController = Object.Instantiate(Resources.Load<GameController>("gameController"));
             var basement = gameController.GetComponentInChildren<BasementController>();
             gameController.SetNumElevators(1);
-            Time.timeScale = 10;
+            Time.timeScale = 100;
         }
 
         private void OnElevatorReachGoalFloor(ElevatorController.Request request, ElevatorController elevator)

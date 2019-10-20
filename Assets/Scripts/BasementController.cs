@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Cabin;
+using Elevator;
 using Floor;
 using Pool;
 using UnityEngine;
