@@ -146,7 +146,7 @@ public class GameController : MonoBehaviour
         return num;
     }
 
-    private void OnRestartClicked()
+    public void OnRestartClicked()
     {
         var goodToGo = true;
 

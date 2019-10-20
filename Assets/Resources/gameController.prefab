@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 1601534498458899659}
   - component: {fileID: 1783446215029647442}
   m_Layer: 5
-  m_Name: world
+  m_Name: gameController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
