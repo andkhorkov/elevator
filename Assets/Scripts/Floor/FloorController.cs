@@ -1,9 +1,8 @@
-﻿using Pool;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Floor
 {
-    public class FloorController : PoolObject
+    public class FloorController : ElevatorElement
     {
         [SerializeField] private DoorController doorController;
         [SerializeField] private FloorDisplay floorDisplay;
@@ -34,29 +33,33 @@ namespace Floor
             elevator.DirectionChanged += OnDirectionChanged;
         }
 
-        private void Awake()
+        protected override void Awake()
         {
-            GameController.Restart += OnRestart;
+            base.Awake();
+
             ElevatorController.GoalFloorReached += OnGoalFloorReached;
             ElevatorController.RequestNoLongerActual += OnRequestNoLongerActual;
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
+
             elevator.FloorChanged -= OnFloorChanged;
             elevator.EnteredIdle -= OnEnteredIdle;
             elevator.DirectionChanged -= OnDirectionChanged;
             ElevatorController.GoalFloorReached -= OnGoalFloorReached;
             ElevatorController.RequestNoLongerActual -= OnRequestNoLongerActual;
-            GameController.Restart -= OnRestart;
         }
 
-        private void OnRestart()
+        protected override void OnRestart()
         {
-            ReturnObject();
+            base.OnRestart();
 
             btnUp.SetDefaultColor();
             btnDown.SetDefaultColor();
+            SetActiveUpBtn(true);
+            SetActiveDownBtn(true);
             floorDisplay.Reset();
         }
 
@@ -85,14 +88,14 @@ namespace Floor
             elevator.OnDoorsClosed();
         }
 
-        public void SwitchOffDownBtn()
+        public void SetActiveUpBtn(bool active)
         {
-            btnDown.gameObject.SetActive(false);
+            btnUp.gameObject.SetActive(active);
         }
 
-        public void SwitchOffUpBtn()
+        public void SetActiveDownBtn(bool active)
         {
-            btnUp.gameObject.SetActive(false);
+            btnDown.gameObject.SetActive(active);
         }
 
         public void OnButtonClicked(ElevatorDirection direction)
@@ -141,20 +144,6 @@ namespace Floor
         public void OnGoalFloorReached()
         {
             floorDisplay.OnGoalFloorReached();
-        }
-
-        public override void OnTakenFromPool()
-        {
-        }
-
-        public override void OnReturnedToPool()
-        {
-            transform.position = Vector3.right * 10000;
-            name = "pooledFloor";
-        }
-
-        public override void OnPreWarmed()
-        {
         }
     }
 }

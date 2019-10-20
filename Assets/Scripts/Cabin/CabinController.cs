@@ -1,9 +1,8 @@
-﻿using Pool;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Cabin
 {
-    public class CabinController : PoolObject
+    public class CabinController : ElevatorElement
     {
         [SerializeField] private CabinDisplay cabinDisplay;
         [SerializeField] private CanvasGroup cg;
@@ -14,26 +13,29 @@ namespace Cabin
         private bool IsVisible;
         private static float fadeDelta;
 
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
+
             ElevatorController.GoalFloorReached += OnGoalFloorReached;
             ElevatorController.RequestNoLongerActual += OnRequestNoLongerActual;
-            GameController.Restart += OnRestart;
 
             fadeDelta = 1 / fadeInTime;
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
+            base.OnDestroy();
+
             elevator.FloorChanged -= OnFloorChanged;
             ElevatorController.GoalFloorReached -= OnGoalFloorReached;
             ElevatorController.RequestNoLongerActual -= OnRequestNoLongerActual;
-            GameController.Restart -= OnRestart;
         }
 
-        private void OnRestart()
+        protected override void OnRestart()
         {
-            ReturnObject();
+            base.OnRestart();
+
             cg.alpha = 0;
             IsVisible = false;
 
@@ -93,21 +95,6 @@ namespace Cabin
         private void Update()
         {
             cg.alpha = Mathf.MoveTowards(cg.alpha, IsVisible ? 1 : 0, fadeDelta * Time.deltaTime);
-        }
-
-        public override void OnTakenFromPool()
-        {
-            
-        }
-
-        public override void OnReturnedToPool()
-        {
-            transform.position = Vector3.right * 10000;
-            name = "pooledCabin";
-        }
-
-        public override void OnPreWarmed()
-        {
         }
     }
 }

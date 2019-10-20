@@ -11,8 +11,6 @@ public class UIController : MonoBehaviour
     [SerializeField] private Text lblFloorsAmount;
     [SerializeField] private CanvasGroup cg;
 
-    public bool IsOnScreen { get; private set; }
-
     public InputField ElevatorsAmountInput => elevatorsAmountInput;
     public InputField FloorsAmountInput => floorsAmountInput;
     public Button RestartBtn => restartBtn;
@@ -58,5 +56,6 @@ public class UIController : MonoBehaviour
     public void SetActive(bool activate)
     {
         cg.alpha = activate ? 1 : 0;
+        cg.interactable = activate;
     }
 }

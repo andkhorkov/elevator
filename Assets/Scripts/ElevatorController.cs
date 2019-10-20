@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Cabin;
 using Floor;
-using Pool;
 using UnityEngine;
 
 public enum ElevatorDirection
@@ -12,7 +11,7 @@ public enum ElevatorDirection
     none
 }
 
-public class ElevatorController : PoolObject
+public class ElevatorController : ElevatorElement
 {
     public struct Request : IComparable<Request>, IEqualityComparer<Request>
     {
@@ -95,23 +94,13 @@ public class ElevatorController : PoolObject
 
     public static event Action<Request, ElevatorController> RequestNoLongerActual = delegate { };
 
-    private void Awake()
+    protected override void Awake()
     {
-        GameController.Restart += OnRestart;
+        base.Awake();
 
         idleState = new IdleState(this);
         movingState = new MovingState(this);
         doorsCycleState = new DoorsCycleState(this);
-    }
-
-    private void OnDestroy()
-    {
-        GameController.Restart -= OnRestart;
-    }
-
-    private void OnRestart()
-    {
-        ReturnObject();
     }
 
     public void Initialize(Dictionary<int, FloorController> floors, CabinController cabinController, float speed, int id)
@@ -133,6 +122,8 @@ public class ElevatorController : PoolObject
         FloorChanged.Invoke(currFloorNum);
         GoalFloorReached.Invoke(new Request(ElevatorDirection.none, currFloorNum), this);
         cabinController.ShowCabin(false);
+        currRequest = new Request(ElevatorDirection.none, currFloorNum);
+        NotifyFloor(currRequest);
     }
 
     private void Update()
@@ -443,18 +434,5 @@ public class ElevatorController : PoolObject
         {
             elevator.CloseDoors();
         }
-    }
-
-    public override void OnTakenFromPool()
-    {
-    }
-
-    public override void OnReturnedToPool()
-    {
-        transform.position = Vector3.right * 10000;
-    }
-
-    public override void OnPreWarmed()
-    {
     }
 }

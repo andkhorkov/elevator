@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Cabin;
 using Floor;
 using Pool;
@@ -33,13 +32,13 @@ public class BasementController : MonoBehaviour
         wall.size = new Vector2(desiredResolution.y * Camera.main.aspect, desiredResolution.y);
     }
 
-    public void Restart(int elevatorsCount, int floorsCount)
+    public void Restart(int elevatorsAmount, int floorsAmount)
     {
-        var floorPositions = BuildCeilings(origin, floorsCount);
-        BuildElevators(floorPositions, origin, elevatorsCount, floorsCount);
+        var floorPositions = BuildCeilings(floorsAmount);
+        BuildElevators(floorPositions, elevatorsAmount, floorsAmount);
     }
 
-    private Vector3[] BuildCeilings(Vector3 origin, int floorsCount)
+    private Vector3[] BuildCeilings(int floorsCount)
     {
         var floorPrefab = Resources.Load<FloorController>("floorController");
         var doorSize = floorPrefab.DoorController.DoorSize;
@@ -55,16 +54,15 @@ public class BasementController : MonoBehaviour
             ceilingSpr.SetOrientation(floorPositions[i], Quaternion.identity);
             ceilingSpr.transform.SetParent(transform);
             ceilingSpr.Spr.size = ceilSize;
-            ceilingSpr.name = $"floor{i + 1}";
+            ceilingSpr.name = $"ceiling{i + 1}";
         }
 
         return floorPositions;
     }
 
-    private void BuildElevators(Vector3[] floorPositions, Vector3 origin, int elevatorsCount, int floorsCount)
+    private void BuildElevators(Vector3[] floorPositions, int elevatorsCount, int floorsCount)
     {
         elevators = new ElevatorController[elevatorsCount];
-        var floorControllerPrefab = Resources.Load<FloorController>("floorController");
 
         for (int i = 0; i < elevatorsCount; i++)
         {
@@ -87,8 +85,8 @@ public class BasementController : MonoBehaviour
                 floor.Initialize(floorNum, elevatorController, this);
             }
 
-            floors[1].SwitchOffDownBtn();
-            floors[floorsCount].SwitchOffUpBtn();
+            floors[1].SetActiveDownBtn(false);
+            floors[floorsCount].SetActiveUpBtn(false);
 
             var cabin = PoolManager.GetObject<CabinController>(cabinPrefabPath);
             cabin.transform.SetParent(elevatorController.transform);

@@ -27,7 +27,7 @@ public class GameController : MonoBehaviour
 
     private void Awake()
     {
-        uiController = FindObjectOfType<UIController>(); //lazyness, this should be referenced in some container object, or DiContainer
+        uiController = FindObjectOfType<UIController>(); //laziness, this should be referenced in some container object, or DiContainer
 
         uiController.ElevatorsAmountInput.onEndEdit.AddListener(OnElevatorsCountChanged);
         uiController.FloorsAmountInput.onEndEdit.AddListener(OnFloorsCountChanged);
@@ -111,7 +111,7 @@ public class GameController : MonoBehaviour
 
     private void OnElevatorsCountChanged(string value)
     {
-        var amount = Check(value);
+        var amount = CheckInput(value);
 
         if (amount == -1)
         {
@@ -124,7 +124,7 @@ public class GameController : MonoBehaviour
 
     private void OnFloorsCountChanged(string value)
     {
-        var amount = Check(value);
+        var amount = CheckInput(value);
 
         if (amount == -1)
         {
@@ -135,7 +135,7 @@ public class GameController : MonoBehaviour
         FloorsAmountChanged.Invoke(amount);
     }
 
-    private static int Check(string str)
+    private static int CheckInput(string str)
     {
         if (!int.TryParse(str, out var num))
         {
