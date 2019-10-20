@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿#if UNITY_EDITOR
+using UnityEditor;
 using UnityEngine;
 
 [CustomPropertyDrawer(typeof(AssetPathGetterAttribute))]
@@ -48,3 +49,4 @@ public class ObjectToPathEditorWidget : PropertyDrawer
         return base.GetPropertyHeight(property, label) * 3;
     }
 }
+#endif
