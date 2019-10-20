@@ -1,14 +1,16 @@
-﻿using UnityEngine;
+﻿using Elevator;
+using UnityEngine;
 
 namespace Floor
 {
-    public class FloorController : MonoBehaviour
+    public class FloorController : ElevatorElement
     {
         [SerializeField] private DoorController doorController;
         [SerializeField] private FloorDisplay floorDisplay;
         [SerializeField] private FloorBtn btnUp;
         [SerializeField] private FloorBtn btnDown;
 
+        private BasementController basement;
         private ElevatorController elevator;
 
         public FloorBtn BtnUp => btnUp;
@@ -20,26 +22,46 @@ namespace Floor
 
         public Vector3 Position { get; private set; }
 
-        public void Initialize(int num, ElevatorController elevator)
+        public void Initialize(int num, ElevatorController elevator, BasementController basement)
         {
             Num = num;
             Position = transform.position;
             this.elevator = elevator;
+            this.basement = basement;
 
             elevator.FloorChanged += OnFloorChanged;
             elevator.EnteredIdle += OnEnteredIdle;
             elevator.DirectionChanged += OnDirectionChanged;
-            elevator.GoalFloorReached += OnGoalFloorReached;
-            elevator.RequestNoLongerActual += OnRequestNoLongerActual;
         }
 
-        private void OnDestroy()
+        protected override void Awake()
         {
+            base.Awake();
+
+            ElevatorController.GoalFloorReached += OnGoalFloorReached;
+            ElevatorController.RequestNoLongerActual += OnRequestNoLongerActual;
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+
             elevator.FloorChanged -= OnFloorChanged;
             elevator.EnteredIdle -= OnEnteredIdle;
             elevator.DirectionChanged -= OnDirectionChanged;
-            elevator.GoalFloorReached -= OnGoalFloorReached;
-            elevator.RequestNoLongerActual -= OnRequestNoLongerActual;
+            ElevatorController.GoalFloorReached -= OnGoalFloorReached;
+            ElevatorController.RequestNoLongerActual -= OnRequestNoLongerActual;
+        }
+
+        protected override void OnRestart()
+        {
+            base.OnRestart();
+
+            btnUp.SetDefaultColor();
+            btnDown.SetDefaultColor();
+            SetActiveUpBtn(true);
+            SetActiveDownBtn(true);
+            floorDisplay.Reset();
         }
 
         public void OnDirectionChanged(ElevatorDirection direction)
@@ -67,19 +89,19 @@ namespace Floor
             elevator.OnDoorsClosed();
         }
 
-        public void SwitchOffDownBtn()
+        public void SetActiveUpBtn(bool active)
         {
-            btnDown.gameObject.SetActive(false);
+            btnUp.gameObject.SetActive(active);
         }
 
-        public void SwitchOffUpBtn()
+        public void SetActiveDownBtn(bool active)
         {
-            btnUp.gameObject.SetActive(false);
+            btnDown.gameObject.SetActive(active);
         }
 
         public void OnButtonClicked(ElevatorDirection direction)
         {
-            elevator.AddRequest(Num, direction);
+            basement.AddRequest(Num, direction, elevator);
         }
 
         private void OnFloorChanged(int floorNum)
@@ -92,12 +114,12 @@ namespace Floor
             floorDisplay.OnEnteredIdle();
         }
 
-        private void OnGoalFloorReached(ElevatorController.Request request)
+        private void OnGoalFloorReached(ElevatorController.Request request, ElevatorController elevator)
         {
             SetBtnsState(request);
         }
 
-        private void OnRequestNoLongerActual(ElevatorController.Request request)
+        private void OnRequestNoLongerActual(ElevatorController.Request request, ElevatorController elevator)
         {
             SetBtnsState(request);
         }
@@ -109,12 +131,20 @@ namespace Floor
                 return;
             }
 
+            if (request.Direction == ElevatorDirection.up)
+            {
+                btnUp.SetDefaultColor();
+            }
+
+            if (request.Direction == ElevatorDirection.down)
+            {
+                btnDown.SetDefaultColor();
+            }
+        }
+
+        public void OnGoalFloorReached()
+        {
             floorDisplay.OnGoalFloorReached();
-            btnUp.OnGoalFloorReached(request.Direction);
-            btnDown.OnGoalFloorReached(request.Direction);
         }
     }
 }
-
-
-

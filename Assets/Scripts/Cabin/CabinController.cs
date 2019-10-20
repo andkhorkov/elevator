@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using Elevator;
+using UnityEngine;
 
 namespace Cabin
 {
-    public class CabinController : MonoBehaviour
+    public class CabinController : ElevatorElement
     {
         [SerializeField] private CabinDisplay cabinDisplay;
         [SerializeField] private CanvasGroup cg;
@@ -11,7 +12,39 @@ namespace Cabin
 
         private ElevatorController elevator;
         private bool IsVisible;
-        private static float maxDelta;
+        private static float fadeDelta;
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            ElevatorController.GoalFloorReached += OnGoalFloorReached;
+            ElevatorController.RequestNoLongerActual += OnRequestNoLongerActual;
+
+            fadeDelta = 1 / fadeInTime;
+        }
+
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+
+            elevator.FloorChanged -= OnFloorChanged;
+            ElevatorController.GoalFloorReached -= OnGoalFloorReached;
+            ElevatorController.RequestNoLongerActual -= OnRequestNoLongerActual;
+        }
+
+        protected override void OnRestart()
+        {
+            base.OnRestart();
+
+            cg.alpha = 0;
+            IsVisible = false;
+
+            for (int i = 0; i < btns.Length; i++)
+            {
+                btns[i].SetDefaultColor();
+            }
+        }
 
         public void OnButtonClicked(int floorNum)
         {
@@ -21,11 +54,8 @@ namespace Cabin
         public void Initialize(ElevatorController elevator)
         {
             this.elevator = elevator;
-            maxDelta = 1 / fadeInTime;
 
             elevator.FloorChanged += OnFloorChanged;
-            elevator.GoalFloorReached += OnGoalFloorReached;
-            elevator.RequestNoLongerActual += OnRequestNoLongerActual;
         }
 
         public void ShowCabin(bool show)
@@ -33,26 +63,29 @@ namespace Cabin
             IsVisible = show;
         }
 
-        private void OnDestroy()
+        public void OnGoalFloorReached(ElevatorController.Request request, ElevatorController elevator)
         {
-            elevator.FloorChanged -= OnFloorChanged;
-            elevator.GoalFloorReached -= OnGoalFloorReached;
-            elevator.RequestNoLongerActual -= OnRequestNoLongerActual;
+            if (this.elevator != elevator)
+            {
+                return;
+            }
+
+            SetBtnState(request.FloorNum);
         }
 
-        private void OnGoalFloorReached(ElevatorController.Request request)
+        private void OnRequestNoLongerActual(ElevatorController.Request request, ElevatorController elevator)
         {
-            SetBtnState(request);
+            if (this.elevator != elevator)
+            {
+                return;
+            }
+
+            SetBtnState(request.FloorNum);
         }
 
-        private void OnRequestNoLongerActual(ElevatorController.Request request)
+        private void SetBtnState(int floorNum)
         {
-            SetBtnState(request);
-        }
-
-        private void SetBtnState(ElevatorController.Request request)
-        {
-            btns[request.FloorNum - 1].Reset();
+            btns[floorNum - 1].SetDefaultColor();
         }
 
         private void OnFloorChanged(int floorNum)
@@ -62,7 +95,8 @@ namespace Cabin
 
         private void Update()
         {
-            cg.alpha = Mathf.MoveTowards(cg.alpha, IsVisible ? 1 : 0, maxDelta * Time.deltaTime);
+            cg.alpha = Mathf.MoveTowards(cg.alpha, IsVisible ? 1 : 0, fadeDelta * Time.deltaTime);
         }
     }
 }
+

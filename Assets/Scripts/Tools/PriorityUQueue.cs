@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using UnityEngine;
 
 public class PriorityUQueue<T> where T : IComparable<T>
 {
@@ -21,6 +20,12 @@ public class PriorityUQueue<T> where T : IComparable<T>
     public bool Contains(T item)
     {
         return set.Contains(item);
+    }
+
+    public void Clear()
+    {
+        data.Clear();
+        set.Clear();
     }
 
     public void Remove(T item)

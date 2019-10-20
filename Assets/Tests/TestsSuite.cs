@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Elevator;
 using NUnit.Framework;
+using Pool;
 using UnityEngine;
 using UnityEngine.TestTools;
 using Object = UnityEngine.Object;
@@ -10,9 +12,11 @@ namespace Tests
 {
     public class TestsSuite
     {
-        private GameObject world;
+        private GameController gameController;
+        private UIController uiController;
         private ElevatorController elevator;
         private List<int> visitedFloors = new List<int>();
+        private PoolManager poolManager;
 
         [SetUp]
         public void Setup()
@@ -23,25 +27,37 @@ namespace Tests
             };
 
             cam.AddComponent<Camera>();
-            world = Object.Instantiate(Resources.Load<GameObject>("world"));
+            var pm = new GameObject("PoolManager");
+            poolManager = pm.AddComponent<PoolManager>();
+            uiController = Object.Instantiate(Resources.Load<UIController>("menu"));
+            gameController = Object.Instantiate(Resources.Load<GameController>("gameController"));
+            var basement = gameController.GetComponentInChildren<BasementController>();
+            gameController.SetNumElevators(1);
             Time.timeScale = 100;
         }
 
-        private void OnElevatorReachGoalFloor(ElevatorController.Request request)
+        private void OnElevatorReachGoalFloor(ElevatorController.Request request, ElevatorController elevator)
         {
+            if (this.elevator != elevator)
+            {
+                return;
+            }
+
             visitedFloors.Add(request.FloorNum);
         }
 
         private void SetElevator()
         {
-            elevator = world.GetComponentInChildren<ElevatorController>();
-            elevator.GoalFloorReached += OnElevatorReachGoalFloor;
+            gameController.OnRestartClicked();
+            elevator = gameController.GetComponentInChildren<ElevatorController>();
+            ElevatorController.GoalFloorReached += OnElevatorReachGoalFloor;
         }
 
         [TearDown]
         public void Teardown()
         {
-            Object.Destroy(world.gameObject);
+            ElevatorController.GoalFloorReached -= OnElevatorReachGoalFloor;
+            Object.Destroy(gameController.gameObject);
             Time.timeScale = 1;
             visitedFloors.Clear();
         }
@@ -50,7 +66,7 @@ namespace Tests
         public IEnumerator GameSetupComplete()
         {
             yield return null;
-            Assert.IsNotNull(world);
+            Assert.IsNotNull(gameController);
         }
 
         [UnityTest]
@@ -88,7 +104,7 @@ namespace Tests
 
             yield return new AwaitUntilElevatorIsIdle(elevator);
 
-            Assert.AreEqual(new List<int>() { 5,6,3,1 }, visitedFloors);
+            Assert.AreEqual(new List<int>() { 5, 6, 3, 1 }, visitedFloors);
         }
 
         [UnityTest]
@@ -176,7 +192,7 @@ namespace Tests
             yield return new WaitForSeconds(2);
             elevator.Floors[3].BtnUp.OnClick();
 
-            yield return new AwaitUntilElevatorIsIdle(elevator); 
+            yield return new AwaitUntilElevatorIsIdle(elevator);
 
             Assert.AreEqual(new List<int>() { 3 }, visitedFloors);
         }
@@ -187,7 +203,7 @@ namespace Tests
             SetElevator();
 
             elevator.Floors[3].BtnDown.OnClick();
-            yield return new WaitForSeconds(2);
+            yield return new WaitForSeconds(0.1f);
             elevator.Floors[3].BtnUp.OnClick();
             yield return new WaitForSeconds(1);
             elevator.Floors[4].BtnUp.OnClick();
@@ -233,13 +249,11 @@ namespace Tests
 
             yield return new AwaitUntilElevatorIsIdle(elevator);
 
-            Print();
-
             Assert.AreEqual(new List<int>() { 5, 4, 3 }, visitedFloors);
         }
 
         [UnityTest]
-        public IEnumerator Elevator_WTF_CantExplain() 
+        public IEnumerator Elevator_WTF_CantExplain()
         {
             SetElevator();
 
@@ -254,10 +268,10 @@ namespace Tests
             elevator.Floors[4].BtnUp.OnClick();
             yield return new WaitForSeconds(1);
             yield return new AwaitUntilElevatorReachFloor(3, elevator);
-            elevator.Floors[6].BtnDown.OnClick(); // on 3rd floor he lied end went to 6th (emulated cabin btn)
+            elevator.Floors[6].BtnUp.OnClick(); // on 3rd floor he lied end went to 6th (emulated cabin btn)
 
             yield return new AwaitUntilElevatorIsIdle(elevator);
-            Print();
+
             Assert.AreEqual(new List<int>() { 6, 3, 2, 4, 6, 5 }, visitedFloors);
         }
 
