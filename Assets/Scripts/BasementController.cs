@@ -61,6 +61,7 @@ public class BasementController : MonoBehaviour
         return floorPositions;
     }
 
+    //here I use SetParent for readability. I know it makes a lot of gc.
     private void BuildElevators(Vector3[] floorPositions, int elevatorsCount, int floorsCount)
     {
         elevators = new ElevatorController[elevatorsCount];

@@ -92,7 +92,7 @@ namespace Elevator
 
         public event Action<ElevatorDirection> DirectionChanged = delegate { };
 
-        public event Action<int> FloorRequested = delegate { }; 
+        public event Action<int> CabinFloorRequested = delegate { }; 
 
         public static event Action<Request, ElevatorController> GoalFloorReached = delegate { }; // it's better to refactor in such way that each floor has all the doors in it, then we wouldn't need this broadcasting event, that every FloorController receives.
 
@@ -231,11 +231,10 @@ namespace Elevator
                 return;
             }
 
-            FloorRequested.Invoke(desiredFloorNum);
-
             if (desiredDirection == ElevatorDirection.none) // from cabin btn
             {
                 desiredDirection = GetDirectionToRequestedFloor(desiredFloorNum);
+                CabinFloorRequested.Invoke(desiredFloorNum);
             }
 
             var request = new Request(desiredDirection, desiredFloorNum);

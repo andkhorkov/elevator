@@ -19,7 +19,7 @@ namespace Pool
 
         public void SetOrientation(Vector3 position, Quaternion rotation)
         {
-            transform.parent = null;
+            //transform.parent = null;
             transform.position = position;
             transform.rotation = rotation;
         }

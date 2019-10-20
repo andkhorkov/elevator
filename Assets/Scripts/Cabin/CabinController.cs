@@ -31,7 +31,7 @@ namespace Cabin
         protected override void Unsubscribes()
         {
             elevator.FloorChanged -= OnFloorChanged;
-            elevator.FloorRequested -= OnFloorRequested;
+            elevator.CabinFloorRequested -= OnCabinFloorRequested;
             ElevatorController.GoalFloorReached -= OnGoalFloorReached;
             ElevatorController.RequestNoLongerActual -= OnRequestNoLongerActual;
         }
@@ -59,7 +59,7 @@ namespace Cabin
             this.elevator = elevator;
 
             elevator.FloorChanged += OnFloorChanged;
-            elevator.FloorRequested += OnFloorRequested;
+            elevator.CabinFloorRequested += OnCabinFloorRequested;
             ElevatorController.GoalFloorReached += OnGoalFloorReached;
             ElevatorController.RequestNoLongerActual += OnRequestNoLongerActual;
         }
@@ -94,7 +94,7 @@ namespace Cabin
             btns[floorNum - 1].Disactivate();
         }
 
-        private void OnFloorRequested(int floorNum)
+        private void OnCabinFloorRequested(int floorNum)
         {
             btns[floorNum - 1].Activate();
         }
