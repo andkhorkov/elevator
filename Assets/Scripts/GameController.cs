@@ -28,6 +28,8 @@ public class GameController : MonoBehaviour
     private void Awake()
     {
         uiController = FindObjectOfType<UIController>(); //laziness, this should be referenced in some container object, or DiContainer
+        var canvas = GetComponent<Canvas>();
+        canvas.worldCamera = Camera.main;
 
         uiController.ElevatorsAmountInput.onEndEdit.AddListener(OnElevatorsCountChanged);
         uiController.FloorsAmountInput.onEndEdit.AddListener(OnFloorsCountChanged);

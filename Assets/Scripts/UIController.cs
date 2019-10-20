@@ -57,5 +57,6 @@ public class UIController : MonoBehaviour
     {
         cg.alpha = activate ? 1 : 0;
         cg.interactable = activate;
+        cg.blocksRaycasts = activate;
     }
 }

@@ -233,6 +233,11 @@ namespace Elevator
 
             if (desiredDirection == ElevatorDirection.none) // from cabin btn
             {
+                if (desiredFloorNum == currFloorNum)
+                {
+                    return;
+                }
+
                 desiredDirection = GetDirectionToRequestedFloor(desiredFloorNum);
                 CabinFloorRequested.Invoke(desiredFloorNum);
             }
