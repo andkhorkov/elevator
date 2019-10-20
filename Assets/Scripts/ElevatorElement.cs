@@ -11,12 +11,16 @@ public abstract class ElevatorElement : PoolObject
     protected virtual void OnDestroy()
     {
         GameController.Restart -= OnRestart;
+
+        Unsubscribes();
     }
 
     protected virtual void OnRestart()
     {
         ReturnObject();
     }
+
+    protected abstract void Unsubscribes();
 
     public override void OnTakenFromPool()
     {
@@ -27,6 +31,7 @@ public abstract class ElevatorElement : PoolObject
         transform.parent = null;
         transform.position = Vector3.right * 10000;
         name = $"pooled_{GetType()}";
+        Unsubscribes();
     }
 
     public override void OnPreWarmed()

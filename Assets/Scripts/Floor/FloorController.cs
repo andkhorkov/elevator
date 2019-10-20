@@ -32,20 +32,13 @@ namespace Floor
             elevator.FloorChanged += OnFloorChanged;
             elevator.EnteredIdle += OnEnteredIdle;
             elevator.DirectionChanged += OnDirectionChanged;
-        }
-
-        protected override void Awake()
-        {
-            base.Awake();
 
             ElevatorController.GoalFloorReached += OnGoalFloorReached;
             ElevatorController.RequestNoLongerActual += OnRequestNoLongerActual;
         }
 
-        protected override void OnDestroy()
+        protected override void Unsubscribes()
         {
-            base.OnDestroy();
-
             elevator.FloorChanged -= OnFloorChanged;
             elevator.EnteredIdle -= OnEnteredIdle;
             elevator.DirectionChanged -= OnDirectionChanged;

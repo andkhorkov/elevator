@@ -92,6 +92,8 @@ namespace Elevator
 
         public event Action<ElevatorDirection> DirectionChanged = delegate { };
 
+        public event Action<int> FloorRequested = delegate { }; 
+
         public static event Action<Request, ElevatorController> GoalFloorReached = delegate { }; // it's better to refactor in such way that each floor has all the doors in it, then we wouldn't need this broadcasting event, that every FloorController receives.
 
         public static event Action<Request, ElevatorController> RequestNoLongerActual = delegate { };
@@ -103,6 +105,10 @@ namespace Elevator
             idleState = new IdleState(this);
             movingState = new MovingState(this);
             doorsCycleState = new DoorsCycleState(this);
+        }
+
+        protected override void Unsubscribes()
+        {
         }
 
         public void Initialize(Dictionary<int, FloorController> floors, CabinController cabinController, float speed, int id)
@@ -122,7 +128,7 @@ namespace Elevator
             SetState(idleState);
 
             FloorChanged.Invoke(currFloorNum);
-            GoalFloorReached.Invoke(new Request(ElevatorDirection.none, currFloorNum), this);
+            //GoalFloorReached.Invoke(new Request(ElevatorDirection.none, currFloorNum), this);
             cabinController.ShowCabin(false);
             currRequest = new Request(ElevatorDirection.none, currFloorNum);
             NotifyFloor(currRequest);
@@ -220,6 +226,13 @@ namespace Elevator
         //todo: make it not that scary
         public void AddRequest(int desiredFloorNum, ElevatorDirection desiredDirection)
         {
+            if (desiredFloorNum < 1 || !Floors.ContainsKey(desiredFloorNum))
+            {
+                return;
+            }
+
+            FloorRequested.Invoke(desiredFloorNum);
+
             if (desiredDirection == ElevatorDirection.none) // from cabin btn
             {
                 desiredDirection = GetDirectionToRequestedFloor(desiredFloorNum);

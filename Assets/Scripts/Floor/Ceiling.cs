@@ -10,4 +10,8 @@ public class Ceiling : ElevatorElement
 
         Spr = GetComponent<SpriteRenderer>();
     }
+
+    protected override void Unsubscribes()
+    {
+    }
 }

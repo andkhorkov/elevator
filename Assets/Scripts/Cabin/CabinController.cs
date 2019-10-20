@@ -18,9 +18,6 @@ namespace Cabin
         {
             base.Awake();
 
-            ElevatorController.GoalFloorReached += OnGoalFloorReached;
-            ElevatorController.RequestNoLongerActual += OnRequestNoLongerActual;
-
             fadeDelta = 1 / fadeInTime;
         }
 
@@ -28,7 +25,13 @@ namespace Cabin
         {
             base.OnDestroy();
 
+            Unsubscribes();
+        }
+
+        protected override void Unsubscribes()
+        {
             elevator.FloorChanged -= OnFloorChanged;
+            elevator.FloorRequested -= OnFloorRequested;
             ElevatorController.GoalFloorReached -= OnGoalFloorReached;
             ElevatorController.RequestNoLongerActual -= OnRequestNoLongerActual;
         }
@@ -42,7 +45,7 @@ namespace Cabin
 
             for (int i = 0; i < btns.Length; i++)
             {
-                btns[i].SetDefaultColor();
+                btns[i].Disactivate();
             }
         }
 
@@ -56,6 +59,9 @@ namespace Cabin
             this.elevator = elevator;
 
             elevator.FloorChanged += OnFloorChanged;
+            elevator.FloorRequested += OnFloorRequested;
+            ElevatorController.GoalFloorReached += OnGoalFloorReached;
+            ElevatorController.RequestNoLongerActual += OnRequestNoLongerActual;
         }
 
         public void ShowCabin(bool show)
@@ -70,7 +76,7 @@ namespace Cabin
                 return;
             }
 
-            SetBtnState(request.FloorNum);
+            DisactivateBtn(request.FloorNum);
         }
 
         private void OnRequestNoLongerActual(ElevatorController.Request request, ElevatorController elevator)
@@ -80,12 +86,17 @@ namespace Cabin
                 return;
             }
 
-            SetBtnState(request.FloorNum);
+            DisactivateBtn(request.FloorNum);
         }
 
-        private void SetBtnState(int floorNum)
+        private void DisactivateBtn(int floorNum)
         {
-            btns[floorNum - 1].SetDefaultColor();
+            btns[floorNum - 1].Disactivate();
+        }
+
+        private void OnFloorRequested(int floorNum)
+        {
+            btns[floorNum - 1].Activate();
         }
 
         private void OnFloorChanged(int floorNum)
